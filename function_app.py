@@ -20,6 +20,10 @@ async def create_review(r: Review):
     # TODO: call src modules here
     return {"ok": True, "received": r.model_dump()}
 
+@api.get("/", include_in_schema=False)
+def home():
+    return FileResponse("pages/index.html")
+
 #Expose FastAPI via Azure Functions (ASGI)
 app = func.AsgiFunctionApp(
     app=api,

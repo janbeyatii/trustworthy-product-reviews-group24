@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Trustworthy Product Reviews</title>
+  </head>
+  <body>
+    <h1>Welcome to Trustworthy Product Reviews</h1>
+
+    <!-- When using Azure Authentication with Google -->
+    <!-- This link triggers Azure's built-in login flow -->
+    <a href="/.auth/login/google">
+      <button>Sign in with Google</button>
+    </a>
+
+    <!-- Azure automatically creates a logout endpoint too -->
+    <a href="/.auth/logout">
+      <button>Log out</button>
+    </a>
+
+    <p>
+      After signing in, you'll be redirected back here automatically.  
+      You can then call your FastAPI endpoints — Azure will attach your
+      Google identity headers.
+    </p>
+  </body>
+</html>
