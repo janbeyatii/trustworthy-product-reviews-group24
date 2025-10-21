@@ -9,16 +9,24 @@
 <body>
 <div class="container">
     <h1>Trustworthy Product Reviews</h1>
-    <p class="muted">This homepage is public. Click Login to authenticate with Google.</p>
+    <p class="muted">This homepage is public. Sign in with Google to access your personalized data.</p>
 
+    <!-- Logged-in screen -->
     <div id="authed" class="card" style="display:none;">
+        <h2>Welcome back!</h2>
         <p id="whoami"></p>
-        <a class="btn secondary" href="/.auth/logout?post_logout_redirect_uri=/">Logout</a>
-        <a class="btn" href="/app">Go to App</a>
+        <p class="muted" id="lastSeenRow" style="display:none;"></p>
+
+        <div class="row">
+            <a class="btn" href="/app">Go to Dashboard</a>
+            <a class="btn secondary" href="/.auth/logout?post_logout_redirect_uri=/">Logout</a>
+        </div>
     </div>
 
+    <!-- Logged-out screen -->
     <div id="anon" class="card" style="display:none;">
-        <p>You’re not signed in.</p>
+        <h2>Sign in to Continue</h2>
+        <p>You are not signed in yet.</p>
         <a class="btn" href="/.auth/login/google?post_login_redirect_uri=/">Login with Google</a>
     </div>
 </div>

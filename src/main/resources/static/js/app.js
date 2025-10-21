@@ -1,19 +1,31 @@
+// Fetch identity from Azure Easy Auth
 fetch('/.auth/me', { credentials: 'include' })
-  .then(r => r.json())
+  .then(res => res.ok ? res.json() : null)
   .then(data => {
     const principal = data?.clientPrincipal || null;
+
     if (principal) {
-      const email = (principal.claims || []).find(c => c.typ?.toLowerCase().includes('email'))?.val || '';
-      const name  = (principal.claims || []).find(c => c.typ?.toLowerCase().includes('name'))?.val
-                    || principal.userDetails || email || 'User';
-      document.getElementById('whoami').textContent =
-        `Signed in as ${name}${email ? ' (' + email + ')' : ''}.`;
-      document.getElementById('authed').style.display = '';
+      // Pull a friendly name + email from claims
+      const claims = principal.claims || [];
+      const get = (k) => claims.find(c => (c.typ || '').toLowerCase().includes(k))?.val || '';
+      const email = get('email');
+      const name  = get('name') || principal.userDetails || email || 'User';
+
+      const who = document.getElementById('whoami');
+      if (who) who.textContent = `Signed in as ${name}${email ? ' (' + email + ')' : ''}.`;
+
+      // Show logged-in view
+      const authed = document.getElementById('authed');
+      if (authed) authed.style.display = '';
+
     } else {
-      document.getElementById('anon').style.display = '';
+      // Show anonymous view
+      const anon = document.getElementById('anon');
+      if (anon) anon.style.display = '';
     }
   })
   .catch(() => {
-    // If something unexpected happens, still show anonymous UI.
-    document.getElementById('anon').style.display = '';
+    // If anything fails, default to anonymous
+    const anon = document.getElementById('anon');
+    if (anon) anon.style.display = '';
   });
