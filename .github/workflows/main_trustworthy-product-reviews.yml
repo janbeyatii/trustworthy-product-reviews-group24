@@ -35,20 +35,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write
+      contents: read
 
     steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: python-app
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Unzip artifact for deployment
-        run: |
-          unzip release.zip
-          rm release.zip
-        
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -56,10 +49,10 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_ABF85597676D41648192EF2EAFF08D53 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_7DC5A3FCDBB7452BB41F6D5DF6119DF1 }}
 
-      - name: 'Deploy to Azure Functions'
+      - name: Deploy to Azure Functions (Flex)
         uses: Azure/functions-action@v1
-        id: deploy-to-function
         with:
-          app-name: 'trustworthy-product-reviews'
+          app-name: 'trustworthy-product-reviews-ccbyfffshug4hpar'  # ← use the full resource name
           slot-name: 'Production'
-          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          package: ${{ env.FUNCTIONS_APP_PATH }}
+          remote-build: true

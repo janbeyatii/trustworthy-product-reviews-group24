@@ -1,7 +1,7 @@
 # special entry point for Azure 
 import azure.functions as func
 from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi.responses import FileResponse
 
 #FastAPI
 api = FastAPI(title="Trustworthy Product Reviews API")
@@ -16,7 +16,4 @@ def home():
     return FileResponse("static/index.html")
 
 #Expose FastAPI via Azure Functions (ASGI)
-app = func.AsgiFunctionApp(
-    app=api,
-    http_auth_level=func.AuthLevel.ANONYMOUS  # Anonymous access means APIs are public
-)
+app = func.AsgiFunctionApp(app=api, http_auth_level=func.AuthLevel.ANONYMOUS)
