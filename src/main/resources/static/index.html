@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Trustworthy Product Reviews</title>
+    <style>
+        body { font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif; margin:0; background:#f7f7f8; }
+        .container { max-width: 720px; margin: 8vh auto; background:#fff; border-radius:16px; padding:32px; box-shadow:0 10px 30px rgba(0,0,0,.06); }
+        .btn { display:inline-block; padding:12px 18px; border-radius:999px; background:#111827; color:#fff; text-decoration:none; font-weight:600; }
+        .btn.secondary { background:#e5e7eb; color:#111827; }
+        .muted { color:#6b7280; }
+        .card { border:1px solid #eee; border-radius:12px; padding:20px; margin-top:20px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Trustworthy Product Reviews</h1>
+    <p class="muted">This homepage is public. Click Login to authenticate with Google.</p>
+
+    <div id="authed" class="card" style="display:none;">
+        <p id="whoami"></p>
+        <a class="btn secondary" href="/.auth/logout?post_logout_redirect_uri=/">Logout</a>
+        <a class="btn" href="/app">Go to App</a>
+    </div>
+
+    <div id="anon" class="card" style="display:none;">
+        <p>You’re not signed in.</p>
+        <a class="btn" href="/.auth/login/google?post_login_redirect_uri=/">Login with Google</a>
+    </div>
+</div>
+
+<script>
+    // With "Allow anonymous requests", /.auth/me returns 200 and either
+    // a clientPrincipal (signed in) or null (anonymous).
+    fetch('/.auth/me', { credentials: 'include' })
+      .then(r => r.json())
+      .then(data => {
+        const principal = data?.clientPrincipal || null;
+        if (principal) {
+          const email = (principal.claims || []).find(c => c.typ?.toLowerCase().includes('email'))?.val || '';
+          const name  = (principal.claims || []).find(c => c.typ?.toLowerCase().includes('name'))?.val
+                        || principal.userDetails || email || 'User';
+          document.getElementById('whoami').textContent = `Signed in as ${name}${email ? ' ('+email+')' : ''}.`;
+          document.getElementById('authed').style.display = '';
+        } else {
+          document.getElementById('anon').style.display = '';
+        }
+      })
+      .catch(() => {
+        // If something unexpected happens, still show anonymous UI.
+        document.getElementById('anon').style.display = '';
+      });
+</script>
+</body>
+</html>
