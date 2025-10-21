@@ -81,6 +81,7 @@ jobs:
         with:
           app-name: 'trustworthy-product-reviews'
           slot-name: 'Production'
-          package: ${{ env.FUNCTIONS_APP_PATH }}
+          package: .
           
+
 
