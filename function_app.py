@@ -11,18 +11,9 @@ class Review(BaseModel):
     stars: int
     text: str | None = None
 
-@api.get("/health")
-async def health():
-    return {"status": "ok"}
-
-@api.post("/reviews")
-async def create_review(r: Review):
-    # TODO: call src modules here
-    return {"ok": True, "received": r.model_dump()}
-
 @api.get("/", include_in_schema=False)
 def home():
-    return FileResponse("pages/index.html")
+    return FileResponse("static/index.html")
 
 #Expose FastAPI via Azure Functions (ASGI)
 app = func.AsgiFunctionApp(
