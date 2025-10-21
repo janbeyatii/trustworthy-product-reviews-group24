@@ -6,7 +6,7 @@ name: Build and deploy JAR app to Azure Web App - trustworthy-product-reviews-gr
 on:
   push:
     branches:
-      - main
+      - trustworthyreviews
   workflow_dispatch:
 
 jobs:
