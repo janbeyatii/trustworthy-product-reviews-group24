@@ -1,64 +1,59 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy JAR app to Azure Web App - trustworthy-product-reviews-group24
+name: Build and deploy WAR to Azure Web App - trustworthy-product-reviews-group24
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: windows-latest
     permissions:
-      contents: read #This is required for actions/checkout
-
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Java version
+      - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
+          distribution: microsoft
           java-version: '17'
-          distribution: 'microsoft'
 
-      - name: Build with Maven
-        run: mvn clean install
+      - name: Build WAR with Maven
+        run: mvn -B clean package
 
-      - name: Upload artifact for deployment job
+      - name: Show build outputs (debug)
+        run: dir target
+
+      - name: Upload WAR artifact
         uses: actions/upload-artifact@v4
         with:
-          name: java-app
-          path: '${{ github.workspace }}/target/*.jar'
+          name: war-artifact           
+          path: target/*.war           
+          if-no-files-found: error
 
   deploy:
     runs-on: windows-latest
     needs: build
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
-
+      id-token: write
+      contents: read
     steps:
-      - name: Download artifact from build job
+      - name: Download WAR artifact
         uses: actions/download-artifact@v4
         with:
-          name: java-app
-      
-      - name: Login to Azure
+          name: war-artifact       
+
+      - name: Azure login (OIDC)
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_2F6C13D330014183B9DE44DAB15E174F }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_C94CEB95511745B68A4B627BC1F28F2A }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_6A06DB09B6DC445681B39311276A12FE }}
 
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
+      - name: Deploy to Azure Web App (Tomcat)
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'trustworthy-product-reviews-group24'
           slot-name: 'Production'
-          package: '*.jar'
-
-          
+          package: '*.war'         
