@@ -4,17 +4,49 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Products</title>
-    <link rel="stylesheet" href="/css/products.css">
 </head>
 <body>
 <div class="container">
     <h1>Product Dashboard</h1>
-    <div id="authed" class="card" style="display:none;">
+
+    <div id="authed" style="display:none;">
         <p id="whoami"></p>
-        <a id="logout" class="btn secondary" href="#">Logout</a>
+        <a id="logout" href="/.auth/logout?post_logout_redirect_uri=/index.html">Logout</a>
     </div>
+
+    <div id="gate" style="display:none;">Checking sign-in…</div>
 </div>
 
-<script src="/js/products.js"></script>
+<script>
+    (async () => {
+      const gate = document.getElementById('gate');
+      gate.style.display = 'block';
+      try {
+        const res = await fetch('/.auth/me', { credentials: 'include', cache: 'no-store' });
+        if (!res.ok) throw new Error('me failed');
+        const data = await res.json();
+
+        // Not signed in → go to login
+        if (!Array.isArray(data) || data.length === 0 || !data[0].user_id) {
+          window.location.replace('/index.html');
+          return;
+        }
+
+        // Signed in → reveal content
+        const claims = data[0].user_claims || [];
+        const name = (claims.find(c => c.typ.endsWith('/name')) || {}).val
+                  || (claims.find(c => c.typ.endsWith('/emailaddress')) || {}).val
+                  || data[0].user_id;
+
+        document.getElementById('whoami').textContent = `Signed in as ${name}`;
+        document.getElementById('authed').style.display = 'block';
+      } catch (e) {
+        // On any error, push to login
+        window.location.replace('/index.html');
+      } finally {
+        gate.style.display = 'none';
+      }
+    })();
+</script>
 </body>
 </html>

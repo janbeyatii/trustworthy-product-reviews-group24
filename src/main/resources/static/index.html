@@ -3,20 +3,29 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Trustworthy Product Reviews</title>
-    <link rel="stylesheet" href="/css/index.css">
+    <title>Login</title>
 </head>
 <body>
-<div class="container">
-    <h1>Trustworthy Product Reviews</h1>
-    <p class="muted">Welcome! Please log in to continue to the product dashboard.</p>
+<h1>Trustworthy Product Reviews</h1>
+<p>Sign in to continue.</p>
 
-    <div class="card" id="anon">
-        <a id="login" class="btn" href="#">Login with Google</a>
-    </div>
-</div>
+<a class="btn" href="/.auth/login/google?post_login_redirect_url=/products.html">
+    Sign in with Google
+</a>
 
-<script src="/js/index.js"></script>
-
+<script>
+    // If already signed in, skip login page
+    (async () => {
+      try {
+        const res = await fetch('/.auth/me', { credentials: 'include', cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0 && data[0].user_id) {
+            window.location.replace('/products.html');
+          }
+        }
+      } catch (_) {}
+    })();
+</script>
 </body>
 </html>
