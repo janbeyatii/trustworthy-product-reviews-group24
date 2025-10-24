@@ -4,6 +4,7 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Products</title>
+    <meta http-equiv="Cache-Control" content="no-store" />
 </head>
 <body>
 <div class="container">
@@ -21,27 +22,34 @@
     (async () => {
       const gate = document.getElementById('gate');
       gate.style.display = 'block';
+
       try {
         const res = await fetch('/.auth/me', { credentials: 'include', cache: 'no-store' });
-        if (!res.ok) throw new Error('me failed');
-        const data = await res.json();
+        const data = res.ok ? await res.json() : [];
+        const authed = Array.isArray(data) && data.length > 0 && data[0].user_id;
 
-        // Not signed in → go to login
-        if (!Array.isArray(data) || data.length === 0 || !data[0].user_id) {
-          window.location.replace('/index.html');
-          return;
+        //If not authed but Azure just sent us here after login, retry once
+        if (!authed) {
+          await new Promise(r => setTimeout(r, 800)); // 0.8s pause
+          const retry = await fetch('/.auth/me', { credentials: 'include', cache: 'no-store' });
+          const data2 = retry.ok ? await retry.json() : [];
+          if (Array.isArray(data2) && data2.length > 0 && data2[0].user_id) {
+            // OK now logged in, show page
+          } else {
+            // Still not logged in → go back to login
+            window.location.replace('/index.html');
+            return;
+          }
         }
 
-        // Signed in → reveal content
+        //Signed in → show page
         const claims = data[0].user_claims || [];
         const name = (claims.find(c => c.typ.endsWith('/name')) || {}).val
                   || (claims.find(c => c.typ.endsWith('/emailaddress')) || {}).val
                   || data[0].user_id;
-
         document.getElementById('whoami').textContent = `Signed in as ${name}`;
         document.getElementById('authed').style.display = 'block';
       } catch (e) {
-        // On any error, push to login
         window.location.replace('/index.html');
       } finally {
         gate.style.display = 'none';
