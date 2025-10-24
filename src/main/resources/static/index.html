@@ -5,31 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Login</title>
     <meta http-equiv="Cache-Control" content="no-store" />
+    <link rel="stylesheet" href="css/index.css" />
+
 </head>
 <body>
 <h1>Trustworthy Product Reviews</h1>
 <p>Sign in to continue.</p>
 
-<a class="btn" href="/.auth/login/google?post_login_redirect_url=/products.html">
+<a href="/products.html">Sign in with Google</a>
     Sign in with Google
 </a>
 
 <script>
-    // If already signed in, skip login page
-    (async () => {
-
-    if (new URLSearchParams(window.location.search).has('returnUrl')) return;
-
-      try {
-        const res = await fetch('/.auth/me', { credentials: 'include', cache: 'no-store' });
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0 && data[0].user_id) {
-            window.location.replace('/products.html');
+    <script>
+      (async () => {
+        try {
+          const res = await fetch('/.auth/me', { credentials: 'include', cache: 'no-store' });
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0 && data[0].user_id) {
+              window.location.replace('/products.html');
+            }
           }
-        }
-      } catch (_) {}
-    })();
+        } catch (_) {}
+      })();
 </script>
 </body>
 </html>
