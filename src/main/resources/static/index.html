@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trustworthy Product Reviews</title>
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        window.__SUPABASE_URL__ = window.__SUPABASE_URL__ || 'https://your-supabase-project.supabase.co';
+        window.__SUPABASE_ANON_KEY__ = window.__SUPABASE_ANON_KEY__ || 'public-anon-key';
+    </script>
+</head>
+<body data-page="auth">
+<header class="hero">
+    <div class="hero__content">
+        <h1>Trustworthy Product Reviews</h1>
+        <p class="hero__subtitle">Discover honest insights, track trusted reviewers, and share your authentic experiences.</p>
+    </div>
+</header>
+<main class="auth">
+    <section class="auth__card" id="auth-card">
+        <div class="auth__tabs">
+            <button class="auth__tab auth__tab--active" id="show-login">Login</button>
+            <button class="auth__tab" id="show-signup">Create Account</button>
+        </div>
+        <form id="login-form" class="auth__form" novalidate>
+            <h2>Welcome back</h2>
+            <label class="auth__field">
+                <span>Email</span>
+                <input type="email" id="login-email" required autocomplete="email" placeholder="you@example.com">
+            </label>
+            <label class="auth__field">
+                <span>Password</span>
+                <input type="password" id="login-password" required autocomplete="current-password" placeholder="Your password">
+            </label>
+            <div class="auth__actions">
+                <button type="submit" class="button" id="login-submit">Login</button>
+                <button type="button" class="link" id="forgot-password">Forgot password?</button>
+            </div>
+            <p class="auth__toggle">Need an account? <button type="button" class="link" id="switch-to-signup">Create one</button></p>
+            <p class="auth__status" id="login-status"></p>
+        </form>
+        <form id="signup-form" class="auth__form auth__form--hidden" novalidate>
+            <h2>Create your account</h2>
+            <label class="auth__field">
+                <span>Email</span>
+                <input type="email" id="signup-email" required autocomplete="email" placeholder="you@example.com">
+            </label>
+            <label class="auth__field">
+                <span>Display name</span>
+                <input type="text" id="signup-display-name" maxlength="80" placeholder="e.g. Gadget Guru">
+            </label>
+            <label class="auth__field">
+                <span>Password</span>
+                <input type="password" id="signup-password" required autocomplete="new-password" minlength="6" placeholder="At least 6 characters">
+            </label>
+            <label class="auth__field">
+                <span>Confirm password</span>
+                <input type="password" id="signup-confirm" required autocomplete="new-password" minlength="6" placeholder="Re-enter password">
+            </label>
+            <div class="auth__actions">
+                <button type="submit" class="button" id="signup-submit">Create account</button>
+            </div>
+            <p class="auth__toggle">Already have an account? <button type="button" class="link" id="switch-to-login">Login here</button></p>
+            <p class="auth__status" id="signup-status"></p>
+        </form>
+        <form id="reset-form" class="auth__form auth__form--hidden" novalidate>
+            <h2>Reset your password</h2>
+            <p>Enter the email associated with your account to receive a reset link.</p>
+            <label class="auth__field">
+                <span>Email</span>
+                <input type="email" id="reset-email" required autocomplete="email" placeholder="you@example.com">
+            </label>
+            <div class="auth__actions">
+                <button type="submit" class="button" id="reset-submit">Send reset email</button>
+                <button type="button" class="link" id="back-to-login">Back</button>
+            </div>
+            <p class="auth__status" id="reset-status"></p>
+        </form>
+    </section>
+</main>
+<footer class="footer">&copy; <span id="year"></span> Trustworthy Product Reviews. Built for transparency.</footer>
+
+<script type="module" src="js/auth.js"></script>
+</body>
+</html>
