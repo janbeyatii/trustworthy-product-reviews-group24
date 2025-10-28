@@ -17,7 +17,6 @@
     <name>trustworthy-product-reviews-group24</name>
     <description>Trustworthy Product Reviews</description>
 
-    <!-- WAR for external Tomcat -->
     <packaging>war</packaging>
 
     <properties>
@@ -25,7 +24,6 @@
     </properties>
 
     <dependencies>
-        <!-- Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -37,14 +35,37 @@
             </exclusions>
         </dependency>
 
-        <!-- Tomcat provided by Azure App Service -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-tomcat</artifactId>
             <scope>provided</scope>
         </dependency>
 
-        <!-- tests -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jdbc</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-jose</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -52,9 +73,7 @@
         </dependency>
     </dependencies>
 
-
     <build>
-        <!-- Make the WAR deploy as root context -->
         <finalName>ROOT</finalName>
 
         <plugins>
