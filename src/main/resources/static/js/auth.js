@@ -194,7 +194,7 @@ async function initialiseAppGuards() {
     }
 }
 
-if (page === 'auth') {
+if (page === 'auth' || page === 'landing') {
     initialiseAuthPage().catch((error) => console.error('Failed to initialise auth page', error));
 } else if (page === 'app') {
     initialiseAppGuards().catch((error) => console.error('Failed to guard app page', error));

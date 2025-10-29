@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/whoami")
+@RequestMapping("/api")
 public class UserController {
 
-    @GetMapping
+    @GetMapping("/whoami")
     public ResponseEntity<?> whoAmI() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !(authentication.getPrincipal() instanceof SupabaseUser user)) {

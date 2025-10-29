@@ -9,79 +9,118 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script>
-        window.__SUPABASE_URL__ = window.__SUPABASE_URL__ || 'https://your-supabase-project.supabase.co';
-        window.__SUPABASE_ANON_KEY__ = window.__SUPABASE_ANON_KEY__ || 'public-anon-key';
+        window.__SUPABASE_URL__ = 'https://yoeskespkkrctuxgezee.supabase.co';
+        window.__SUPABASE_ANON_KEY__ = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvZXNrZXNwa2tyY3R1eGdlemVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1OTMyNzUsImV4cCI6MjA3NzE2OTI3NX0.FtDQiqVaFliz40lx8-w_p7E4EIBiX5SiRDdSPDQVY4o';
     </script>
 </head>
-<body data-page="auth">
+<body data-page="landing">
 <header class="hero">
     <div class="hero__content">
         <h1>Trustworthy Product Reviews</h1>
-        <p class="hero__subtitle">Discover honest insights, track trusted reviewers, and share your authentic experiences.</p>
     </div>
 </header>
-<main class="auth">
-    <section class="auth__card" id="auth-card">
-        <div class="auth__tabs">
-            <button class="auth__tab auth__tab--active" id="show-login">Login</button>
-            <button class="auth__tab" id="show-signup">Create Account</button>
+
+<main class="landing">
+    <section class="features">
+        <div class="container">
+            <h2>How It Works</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3>Write Reviews</h3>
+                    <p>Share your honest experiences with products through star ratings and detailed reviews. Link products to their original websites for easy reference.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Follow Trusted Reviewers</h3>
+                    <p>Follow users whose reviews you find valuable. Build your own network of trusted reviewers to get personalized recommendations.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Smart Filtering</h3>
+                    <p>View products by average rating or filter by ratings from users you follow. Get recommendations tailored to your trusted network.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Similar Users</h3>
+                    <p>Discover users with similar rating patterns using advanced algorithms. Find reviewers who think like you do.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Trust Network</h3>
+                    <p>See how close other users are in your trust network. The closer they are, the more their reviews matter to you.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Community Leaders</h3>
+                    <p>Discover the most followed users and community leaders who have earned the trust of many reviewers.</p>
+                </div>
+            </div>
         </div>
-        <form id="login-form" class="auth__form" novalidate>
-            <h2>Welcome back</h2>
-            <label class="auth__field">
-                <span>Email</span>
-                <input type="email" id="login-email" required autocomplete="email" placeholder="you@example.com">
-            </label>
-            <label class="auth__field">
-                <span>Password</span>
-                <input type="password" id="login-password" required autocomplete="current-password" placeholder="Your password">
-            </label>
-            <div class="auth__actions">
-                <button type="submit" class="button" id="login-submit">Login</button>
-                <button type="button" class="link" id="forgot-password">Forgot password?</button>
+    </section>
+
+    <section class="cta">
+        <div class="container">
+            <h2>Ready to Get Started?</h2>
+            <p>Join our community of honest reviewers and discover products you can trust.</p>
+            <div class="auth__card" id="auth-card">
+                <div class="auth__tabs">
+                    <button class="auth__tab auth__tab--active" id="show-login">Login</button>
+                    <button class="auth__tab" id="show-signup">Create Account</button>
+                </div>
+                <form id="login-form" class="auth__form" novalidate>
+                    <h3>Welcome back</h3>
+                    <label class="auth__field">
+                        <span>Email</span>
+                        <input type="email" id="login-email" required autocomplete="email" placeholder="you@example.com">
+                    </label>
+                    <label class="auth__field">
+                        <span>Password</span>
+                        <input type="password" id="login-password" required autocomplete="current-password" placeholder="Your password">
+                    </label>
+                    <div class="auth__actions">
+                        <button type="submit" class="button" id="login-submit">Login</button>
+                        <button type="button" class="link" id="forgot-password">Forgot password?</button>
+                    </div>
+                    <p class="auth__toggle">Need an account? <button type="button" class="link" id="switch-to-signup">Create one</button></p>
+                    <p class="auth__status" id="login-status"></p>
+                </form>
+                <form id="signup-form" class="auth__form auth__form--hidden" novalidate>
+                    <h3>Create your account</h3>
+                    <label class="auth__field">
+                        <span>Email</span>
+                        <input type="email" id="signup-email" required autocomplete="email" placeholder="you@example.com">
+                    </label>
+                    <label class="auth__field">
+                        <span>Display name</span>
+                        <input type="text" id="signup-display-name" maxlength="80" placeholder="e.g. Gadget Guru">
+                    </label>
+                    <label class="auth__field">
+                        <span>Password</span>
+                        <input type="password" id="signup-password" required autocomplete="new-password" minlength="6" placeholder="At least 6 characters">
+                    </label>
+                    <label class="auth__field">
+                        <span>Confirm password</span>
+                        <input type="password" id="signup-confirm" required autocomplete="new-password" minlength="6" placeholder="Re-enter password">
+                    </label>
+                    <div class="auth__actions">
+                        <button type="submit" class="button" id="signup-submit">Create account</button>
+                    </div>
+                    <p class="auth__toggle">Already have an account? <button type="button" class="link" id="switch-to-login">Login here</button></p>
+                    <p class="auth__status" id="signup-status"></p>
+                </form>
+                <form id="reset-form" class="auth__form auth__form--hidden" novalidate>
+                    <h3>Reset your password</h3>
+                    <p>Enter the email associated with your account to receive a reset link.</p>
+                    <label class="auth__field">
+                        <span>Email</span>
+                        <input type="email" id="reset-email" required autocomplete="email" placeholder="you@example.com">
+                    </label>
+                    <div class="auth__actions">
+                        <button type="submit" class="button" id="reset-submit">Send reset email</button>
+                        <button type="button" class="link" id="back-to-login">Back</button>
+                    </div>
+                    <p class="auth__status" id="reset-status"></p>
+                </form>
             </div>
-            <p class="auth__toggle">Need an account? <button type="button" class="link" id="switch-to-signup">Create one</button></p>
-            <p class="auth__status" id="login-status"></p>
-        </form>
-        <form id="signup-form" class="auth__form auth__form--hidden" novalidate>
-            <h2>Create your account</h2>
-            <label class="auth__field">
-                <span>Email</span>
-                <input type="email" id="signup-email" required autocomplete="email" placeholder="you@example.com">
-            </label>
-            <label class="auth__field">
-                <span>Display name</span>
-                <input type="text" id="signup-display-name" maxlength="80" placeholder="e.g. Gadget Guru">
-            </label>
-            <label class="auth__field">
-                <span>Password</span>
-                <input type="password" id="signup-password" required autocomplete="new-password" minlength="6" placeholder="At least 6 characters">
-            </label>
-            <label class="auth__field">
-                <span>Confirm password</span>
-                <input type="password" id="signup-confirm" required autocomplete="new-password" minlength="6" placeholder="Re-enter password">
-            </label>
-            <div class="auth__actions">
-                <button type="submit" class="button" id="signup-submit">Create account</button>
-            </div>
-            <p class="auth__toggle">Already have an account? <button type="button" class="link" id="switch-to-login">Login here</button></p>
-            <p class="auth__status" id="signup-status"></p>
-        </form>
-        <form id="reset-form" class="auth__form auth__form--hidden" novalidate>
-            <h2>Reset your password</h2>
-            <p>Enter the email associated with your account to receive a reset link.</p>
-            <label class="auth__field">
-                <span>Email</span>
-                <input type="email" id="reset-email" required autocomplete="email" placeholder="you@example.com">
-            </label>
-            <div class="auth__actions">
-                <button type="submit" class="button" id="reset-submit">Send reset email</button>
-                <button type="button" class="link" id="back-to-login">Back</button>
-            </div>
-            <p class="auth__status" id="reset-status"></p>
-        </form>
+        </div>
     </section>
 </main>
+
 <footer class="footer">&copy; <span id="year"></span> Trustworthy Product Reviews. Built for transparency.</footer>
 
 <script type="module" src="js/auth.js"></script>

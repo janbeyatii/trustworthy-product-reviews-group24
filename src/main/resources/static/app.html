@@ -9,8 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script>
-        window.__SUPABASE_URL__ = window.__SUPABASE_URL__ || 'https://your-supabase-project.supabase.co';
-        window.__SUPABASE_ANON_KEY__ = window.__SUPABASE_ANON_KEY__ || 'public-anon-key';
+        window.__SUPABASE_URL__ = 'https://yoeskespkkrctuxgezee.supabase.co';
+        window.__SUPABASE_ANON_KEY__ = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvZXNrZXNwa2tyY3R1eGdlemVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1OTMyNzUsImV4cCI6MjA3NzE2OTI3NX0.FtDQiqVaFliz40lx8-w_p7E4EIBiX5SiRDdSPDQVY4o';
     </script>
 </head>
 <body data-page="app">
@@ -20,149 +20,61 @@
         <p id="user-greeting">Loading profile…</p>
     </div>
     <nav class="app-header__actions">
-        <button class="button button--ghost" id="refresh-dashboard">Refresh</button>
-        <button class="button button--danger" id="logout-button">Log out</button>
+        <div class="profile-dropdown">
+            <button class="profile-button" id="profile-toggle">
+                <span id="profile-name">Profile</span>
+                <svg class="dropdown-arrow" width="12" height="8" viewBox="0 0 12 8" fill="none">
+                    <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <div class="profile-menu" id="profile-menu">
+                <div class="profile-menu__header">
+                    <h3 id="profile-menu-name">User Profile</h3>
+                    <p id="profile-menu-email">user@example.com</p>
+                </div>
+                <div class="profile-menu__content">
+                    <h4>Account Settings</h4>
+                    <form id="profile-form" class="profile-form" novalidate>
+                        <label class="auth__field">
+                            <span>Display name</span>
+                            <input type="text" id="profile-display-name" maxlength="80" placeholder="Display name">
+                        </label>
+                        <button type="submit" class="button button--small">Save profile</button>
+                        <p class="auth__status" id="profile-status"></p>
+                    </form>
+                    <form id="password-form" class="profile-form" novalidate>
+                        <label class="auth__field">
+                            <span>New password</span>
+                            <input type="password" id="profile-password" minlength="6" placeholder="New password">
+                        </label>
+                        <button type="submit" class="button button--ghost button--small">Change password</button>
+                        <p class="auth__status" id="password-status"></p>
+                    </form>
+                </div>
+                <div class="profile-menu__footer">
+                    <button class="button button--danger button--small" id="logout-button">Log out</button>
+                </div>
+            </div>
+        </div>
     </nav>
 </header>
 <main class="dashboard">
-    <section class="dashboard__sidebar">
-        <article class="panel">
-            <h2>Account settings</h2>
-            <form id="profile-form" class="panel__form" novalidate>
-                <label class="auth__field">
-                    <span>Display name</span>
-                    <input type="text" id="profile-display-name" maxlength="80" placeholder="Display name">
-                </label>
-                <button type="submit" class="button">Save profile</button>
-                <p class="auth__status" id="profile-status"></p>
-            </form>
-            <form id="password-form" class="panel__form" novalidate>
-                <label class="auth__field">
-                    <span>New password</span>
-                    <input type="password" id="profile-password" minlength="6" placeholder="New password">
-                </label>
-                <button type="submit" class="button button--ghost">Change password</button>
-                <p class="auth__status" id="password-status"></p>
-            </form>
-        </article>
-    </section>
     <section class="dashboard__content">
-        <div class="card-grid">
-            <a href="#browse" class="card">
-                <h3>Browse Products</h3>
-                <p>Explore catalogued products and see crowd-sourced trust scores.</p>
-            </a>
-            <a href="#write" class="card">
-                <h3>Write a Review</h3>
-                <p>Share your experience with a quick star rating and optional link.</p>
-            </a>
-            <a href="#my-reviews" class="card">
-                <h3>My Reviews</h3>
-                <p>Track, edit, or remove reviews you’ve already created.</p>
-            </a>
-            <a href="#following" class="card">
-                <h3>Following</h3>
-                <p>Manage the reviewers you trust and discover new voices.</p>
-            </a>
-            <a href="#leaderboard" class="card">
-                <h3>Most Followed</h3>
-                <p>See who the community relies on the most.</p>
-            </a>
-            <a href="#similar" class="card">
-                <h3>Similar Users</h3>
-                <p>Connect with reviewers who rate products like you do.</p>
-            </a>
-            <a href="#trust-graph" class="card">
-                <h3>Trust Graph</h3>
-                <p>Visualise how far away others are in the trust network.</p>
-            </a>
+        <div class="welcome-panel">
+            <h2>Welcome to Your Dashboard</h2>
+            <p>This is your personal homepage. Features will be added here step by step as we build out the platform.</p>
+            <div class="coming-soon">
+                <h3>soon to be implemented</h3>
+                <ul>
+                    <li>Write and manage product reviews</li>
+                    <li>Follow trusted reviewers</li>
+                    <li>Browse products by category and rating</li>
+                    <li>Discover similar users</li>
+                    <li>View trust network analytics</li>
+                    <li>See community leaders</li>
+                </ul>
+            </div>
         </div>
-
-        <section id="browse" class="panel">
-            <div class="panel__header">
-                <h2>Browse Products</h2>
-                <button class="link" data-action="load-products">Refresh</button>
-            </div>
-            <p class="panel__description">This section will display products retrieved from Supabase with live average ratings.</p>
-            <div id="products-list" class="list-placeholder"></div>
-        </section>
-
-        <section id="write" class="panel">
-            <div class="panel__header">
-                <h2>Write a Review</h2>
-            </div>
-            <form id="review-form" class="panel__form" novalidate>
-                <label class="auth__field">
-                    <span>Product ID</span>
-                    <input type="number" id="review-product" min="1" required placeholder="123">
-                </label>
-                <label class="auth__field">
-                    <span>Rating</span>
-                    <input type="number" id="review-rating" min="1" max="5" required placeholder="5">
-                </label>
-                <label class="auth__field">
-                    <span>Review</span>
-                    <textarea id="review-content" rows="4" maxlength="2048" placeholder="Share your honest experience"></textarea>
-                </label>
-                <label class="auth__field">
-                    <span>Product URL (optional)</span>
-                    <input type="url" id="review-url" placeholder="https://example.com/product">
-                </label>
-                <button type="submit" class="button">Submit review</button>
-                <p class="auth__status" id="review-status"></p>
-            </form>
-        </section>
-
-        <section id="my-reviews" class="panel">
-            <div class="panel__header">
-                <h2>My Reviews</h2>
-                <button class="link" data-action="load-my-reviews">Refresh</button>
-            </div>
-            <div id="my-reviews-list" class="list-placeholder"></div>
-        </section>
-
-        <section id="following" class="panel">
-            <div class="panel__header">
-                <h2>Following</h2>
-            </div>
-            <form id="follow-form" class="panel__form" novalidate>
-                <label class="auth__field">
-                    <span>User ID to follow</span>
-                    <input type="text" id="follow-user" required placeholder="uuid">
-                </label>
-                <div class="form-row">
-                    <button type="submit" class="button">Follow</button>
-                    <button type="button" class="button button--ghost" id="unfollow-button">Unfollow</button>
-                </div>
-                <p class="auth__status" id="follow-status"></p>
-            </form>
-            <div id="following-list" class="list-placeholder"></div>
-        </section>
-
-        <section id="leaderboard" class="panel">
-            <div class="panel__header">
-                <h2>Most Followed Users</h2>
-                <button class="link" data-action="load-leaderboard">Refresh</button>
-            </div>
-            <div id="leaderboard-list" class="list-placeholder"></div>
-        </section>
-
-        <section id="similar" class="panel">
-            <div class="panel__header">
-                <h2>Similar Users</h2>
-                <button class="link" data-action="load-similar">Refresh</button>
-            </div>
-            <div id="similar-list" class="list-placeholder"></div>
-        </section>
-
-        <section id="trust-graph" class="panel">
-            <div class="panel__header">
-                <h2>Trust Graph</h2>
-                <button class="link" data-action="load-trust">Refresh</button>
-            </div>
-            <p class="panel__description">Future iterations will visualise trust relationships and degrees of separation using Supabase graph queries.</p>
-            <div id="trust-graph-container" class="list-placeholder"></div>
-        </section>
     </section>
 </main>
 <footer class="footer">&copy; <span id="year"></span> Trustworthy Product Reviews.</footer>
