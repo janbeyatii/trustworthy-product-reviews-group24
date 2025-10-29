@@ -20,49 +20,35 @@
         <p id="user-greeting">Loading profile…</p>
     </div>
     <nav class="app-header__actions">
-        <div class="profile-dropdown">
-            <button class="profile-button" id="profile-toggle">
-                <span id="profile-name">Profile</span>
-                <svg class="dropdown-arrow" width="12" height="8" viewBox="0 0 12 8" fill="none">
-                    <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </button>
-            <div class="profile-menu" id="profile-menu">
-                <div class="profile-menu__header">
-                    <h3 id="profile-menu-name">User Profile</h3>
-                    <p id="profile-menu-email">user@example.com</p>
-                </div>
-                <div class="profile-menu__content">
-                    <h4>Account Settings</h4>
-                    <form id="profile-form" class="profile-form" novalidate>
-                        <label class="auth__field">
-                            <span>Display name</span>
-                            <input type="text" id="profile-display-name" maxlength="80" placeholder="Display name">
-                        </label>
-                        <button type="submit" class="button button--small">Save profile</button>
-                        <p class="auth__status" id="profile-status"></p>
-                    </form>
-                    <form id="password-form" class="profile-form" novalidate>
-                        <label class="auth__field">
-                            <span>New password</span>
-                            <input type="password" id="profile-password" minlength="6" placeholder="New password">
-                        </label>
-                        <button type="submit" class="button button--ghost button--small">Change password</button>
-                        <p class="auth__status" id="password-status"></p>
-                    </form>
-                </div>
-                <div class="profile-menu__footer">
-                    <button class="button button--danger button--small" id="logout-button">Log out</button>
-                </div>
-            </div>
-        </div>
+        <button class="button button--danger" id="logout-button">Log out</button>
     </nav>
 </header>
 <main class="dashboard">
+    <section class="dashboard__sidebar">
+        <article class="panel">
+            <h2>Account Settings</h2>
+            <form id="profile-form" class="panel__form" novalidate>
+                <label class="auth__field">
+                    <span>Display name</span>
+                    <input type="text" id="profile-display-name" maxlength="80" placeholder="Display name">
+                </label>
+                <button type="submit" class="button">Save profile</button>
+                <p class="auth__status" id="profile-status"></p>
+            </form>
+            <form id="password-form" class="panel__form" novalidate>
+                <label class="auth__field">
+                    <span>New password</span>
+                    <input type="password" id="profile-password" minlength="6" placeholder="New password">
+                </label>
+                <button type="submit" class="button button--ghost">Change password</button>
+                <p class="auth__status" id="password-status"></p>
+            </form>
+        </article>
+    </section>
     <section class="dashboard__content">
         <div class="welcome-panel">
             <h2>Welcome to Your Dashboard</h2>
-            <p>This is your personal homepage. Features will be added here step by step as we build out the platform.</p>
+            <p>This is your personal homepage. Features will be added here step by step as the platform is developed.</p>
             <div class="coming-soon">
                 <h3>soon to be implemented</h3>
                 <ul>
