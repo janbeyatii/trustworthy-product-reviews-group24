@@ -47,12 +47,6 @@ jobs:
       - name: List downloaded files (debug)
         run: dir
 
-      - name: Rename built JAR to app.jar (stable name)
-        shell: pwsh
-        run: |
-          $jar = Get-ChildItem -Filter *.jar | Select-Object -First 1
-          Copy-Item $jar.FullName app.jar -Force
-
       - name: Azure login (OIDC)
         uses: azure/login@v2
         with:
