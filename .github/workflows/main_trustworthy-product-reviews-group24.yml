@@ -1,4 +1,4 @@
-name: Build and deploy WAR to Azure Web App - trustworthy-product-reviews-group24
+name: Build and deploy JAR to Azure Web App - trustworthy-product-reviews-group24
 
 on:
   push:
@@ -19,17 +19,17 @@ jobs:
           distribution: microsoft
           java-version: '17'
 
-      - name: Build WAR with Maven
+      - name: Build JAR with Maven
         run: mvn -B -DskipTests clean package
 
       - name: Show build outputs (debug)
         run: dir target
 
-      - name: Upload WAR artifact
+      - name: Upload JAR artifact
         uses: actions/upload-artifact@v4
         with:
-          name: war-artifact           
-          path: target/*.war           
+          name: jar-artifact           
+          path: target/*.jar           
           if-no-files-found: error
 
   deploy:
@@ -39,13 +39,19 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - name: Download WAR artifact
+      - name: Download JAR artifact
         uses: actions/download-artifact@v4
         with:
-          name: war-artifact       
+          name: jar-artifact       
 
       - name: List downloaded files (debug)
         run: dir
+
+      - name: Rename built JAR to app.jar (stable name)
+        shell: pwsh
+        run: |
+          $jar = Get-ChildItem -Filter *.jar | Select-Object -First 1
+          Copy-Item $jar.FullName app.jar -Force
 
       - name: Azure login (OIDC)
         uses: azure/login@v2
@@ -54,9 +60,9 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_C94CEB95511745B68A4B627BC1F28F2A }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_6A06DB09B6DC445681B39311276A12FE }}
 
-      - name: Deploy to Azure Web App (Tomcat)
+      - name: Deploy to Azure Web App (Java SE)
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'trustworthy-product-reviews-group24'
           slot-name: 'Production'
-          package: 'ROOT.war'        
+          package: 'app.jar'        
