@@ -12,6 +12,16 @@ const profileToggle = document.getElementById('profile-toggle');
 const profileMenu = document.getElementById('profile-menu');
 const profileDropdown = document.querySelector('.profile-dropdown');
 
+// Modal elements
+const displayNameModal = document.getElementById('display-name-modal');
+const passwordModal = document.getElementById('password-modal');
+const changeDisplayNameLink = document.getElementById('change-display-name-link');
+const changePasswordLink = document.getElementById('change-password-link');
+const closeDisplayNameModal = document.getElementById('close-display-name-modal');
+const closePasswordModal = document.getElementById('close-password-modal');
+const cancelDisplayName = document.getElementById('cancel-display-name');
+const cancelPassword = document.getElementById('cancel-password');
+
 const setStatus = (element, message, type = 'info') => {
     if (!element) return;
     element.textContent = message;
@@ -39,6 +49,11 @@ const handleProfileUpdate = async (event) => {
         }
         setStatus(profileStatus, 'Profile updated!', 'success');
         await refreshUserProfile();
+        // Close modal after successful update
+        setTimeout(() => {
+            closeModal(displayNameModal);
+            setStatus(profileStatus, '');
+        }, 1500);
     } catch (error) {
         setStatus(profileStatus, error.message ?? 'Unable to update profile.', 'error');
     }
@@ -58,6 +73,11 @@ const handlePasswordUpdate = async (event) => {
         }
         setStatus(passwordStatus, 'Password updated successfully.', 'success');
         passwordInput.value = '';
+        // Close modal after successful update
+        setTimeout(() => {
+            closeModal(passwordModal);
+            setStatus(passwordStatus, '');
+        }, 1500);
     } catch (error) {
         setStatus(passwordStatus, error.message ?? 'Unable to update password.', 'error');
     }
@@ -99,6 +119,29 @@ const closeProfileDropdown = () => {
     profileDropdown?.classList.remove('active');
 };
 
+// Modal functions
+const openModal = (modal) => {
+    modal?.classList.add('active');
+    document.body.style.overflow = 'hidden';
+};
+
+const closeModal = (modal) => {
+    modal?.classList.remove('active');
+    document.body.style.overflow = '';
+};
+
+const openDisplayNameModal = () => {
+    closeProfileDropdown();
+    openModal(displayNameModal);
+    displayNameInput?.focus();
+};
+
+const openPasswordModal = () => {
+    closeProfileDropdown();
+    openModal(passwordModal);
+    passwordInput?.focus();
+};
+
 const initialiseAppPage = async () => {
     await requireSession();
     await refreshUserProfile();
@@ -123,9 +166,33 @@ const initialiseAppPage = async () => {
         }
     });
 
+    // Modal functionality
+    changeDisplayNameLink?.addEventListener('click', openDisplayNameModal);
+    changePasswordLink?.addEventListener('click', openPasswordModal);
+
+    // Close modal buttons
+    closeDisplayNameModal?.addEventListener('click', () => closeModal(displayNameModal));
+    closePasswordModal?.addEventListener('click', () => closeModal(passwordModal));
+    cancelDisplayName?.addEventListener('click', () => closeModal(displayNameModal));
+    cancelPassword?.addEventListener('click', () => closeModal(passwordModal));
+
+    // Close modals when clicking outside
+    displayNameModal?.addEventListener('click', (e) => {
+        if (e.target === displayNameModal) {
+            closeModal(displayNameModal);
+        }
+    });
+    passwordModal?.addEventListener('click', (e) => {
+        if (e.target === passwordModal) {
+            closeModal(passwordModal);
+        }
+    });
+
+    // Form submissions
     document.getElementById('profile-form')?.addEventListener('submit', handleProfileUpdate);
     document.getElementById('password-form')?.addEventListener('submit', handlePasswordUpdate);
 
+    // Logout functionality
     document.getElementById('logout-button')?.addEventListener('click', async () => {
         await supabaseClient.auth.signOut();
         window.location.replace('index.html');

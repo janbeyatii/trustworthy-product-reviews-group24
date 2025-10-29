@@ -20,29 +20,35 @@
         <p id="user-greeting">Loading profile…</p>
     </div>
     <nav class="app-header__actions">
-        <button class="button button--danger" id="logout-button">Log out</button>
+        <div class="profile-dropdown">
+            <button class="profile-button" id="profile-toggle">
+                <span id="profile-name">Loading...</span>
+                <span class="dropdown-arrow">▼</span>
+            </button>
+            <div class="profile-menu" id="profile-menu">
+                <div class="profile-menu__header">
+                    <h3 id="profile-menu-name">Loading...</h3>
+                    <p id="profile-menu-email">Loading...</p>
+                </div>
+                <div class="profile-menu__content">
+                    <h4>Account Settings</h4>
+                    <div class="profile-menu__links">
+                        <button class="link" id="change-display-name-link">Change Display Name</button>
+                        <button class="link" id="change-password-link">Change Password</button>
+                    </div>
+                </div>
+                <div class="profile-menu__footer">
+                    <button class="button button--danger button--small" id="logout-button">Log out</button>
+                </div>
+            </div>
+        </div>
     </nav>
 </header>
 <main class="dashboard">
     <section class="dashboard__sidebar">
         <article class="panel">
-            <h2>Account Settings</h2>
-            <form id="profile-form" class="panel__form" novalidate>
-                <label class="auth__field">
-                    <span>Display name</span>
-                    <input type="text" id="profile-display-name" maxlength="80" placeholder="Display name">
-                </label>
-                <button type="submit" class="button">Save profile</button>
-                <p class="auth__status" id="profile-status"></p>
-            </form>
-            <form id="password-form" class="panel__form" novalidate>
-                <label class="auth__field">
-                    <span>New password</span>
-                    <input type="password" id="profile-password" minlength="6" placeholder="New password">
-                </label>
-                <button type="submit" class="button button--ghost">Change password</button>
-                <p class="auth__status" id="password-status"></p>
-            </form>
+            <h2>Quick Actions</h2>
+            <p>More features coming soon!</p>
         </article>
     </section>
     <section class="dashboard__content">
@@ -63,6 +69,47 @@
         </div>
     </section>
 </main>
+<!-- Account Settings Modals -->
+<div class="modal" id="display-name-modal">
+    <div class="modal__content">
+        <div class="modal__header">
+            <h3>Change Display Name</h3>
+            <button class="modal__close" id="close-display-name-modal">&times;</button>
+        </div>
+        <form id="profile-form" class="modal__form" novalidate>
+            <label class="auth__field">
+                <span>Display name</span>
+                <input type="text" id="profile-display-name" maxlength="80" placeholder="Display name">
+            </label>
+            <div class="modal__actions">
+                <button type="button" class="button button--ghost" id="cancel-display-name">Cancel</button>
+                <button type="submit" class="button">Save Changes</button>
+            </div>
+            <p class="auth__status" id="profile-status"></p>
+        </form>
+    </div>
+</div>
+
+<div class="modal" id="password-modal">
+    <div class="modal__content">
+        <div class="modal__header">
+            <h3>Change Password</h3>
+            <button class="modal__close" id="close-password-modal">&times;</button>
+        </div>
+        <form id="password-form" class="modal__form" novalidate>
+            <label class="auth__field">
+                <span>New password</span>
+                <input type="password" id="profile-password" minlength="6" placeholder="New password">
+            </label>
+            <div class="modal__actions">
+                <button type="button" class="button button--ghost" id="cancel-password">Cancel</button>
+                <button type="submit" class="button">Update Password</button>
+            </div>
+            <p class="auth__status" id="password-status"></p>
+        </form>
+    </div>
+</div>
+
 <footer class="footer">&copy; <span id="year"></span> Trustworthy Product Reviews.</footer>
 
 <script type="module" src="js/auth.js"></script>
