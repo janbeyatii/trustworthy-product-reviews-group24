@@ -45,11 +45,10 @@ The following features will be added incrementally:
 
 1. Clone the repository
 2. Set up your environment variables:
-   - Copy `.env.example` to `.env` (if it exists) or create a `.env` file
-   - Add your Supabase credentials to the `.env` file
-3. Ensure `src/main/resources/application.properties` exists (it reads values from environment variables; no secrets are committed).
-4. Run the application: `mvn spring-boot:run`
-5. Visit `http://localhost:8080` to see the landing page
+   - create a `.env` file
+   - Add Supabase credentials to the `.env` file
+3. Run the application: `mvn spring-boot:run`
+4. Visit `http://localhost:8080` to see the landing page
 
 ### Environment Variables
 
@@ -67,7 +66,3 @@ SUPABASE_DATABASE_URL=your_database_url
 SUPABASE_DATABASE_USERNAME=your_database_username
 SUPABASE_DATABASE_PASSWORD=your_database_password
 ```
-
-## Current API Endpoints
-
-- `GET /api/whoami` - Get current user information (requires authentication)
