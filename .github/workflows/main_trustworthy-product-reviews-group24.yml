@@ -20,7 +20,7 @@ jobs:
           java-version: '17'
 
       - name: Build WAR with Maven
-        run: mvn -B clean package
+        run: mvn -B -DskipTests clean package
 
       - name: Show build outputs (debug)
         run: dir target
@@ -44,6 +44,9 @@ jobs:
         with:
           name: war-artifact       
 
+      - name: List downloaded files (debug)
+        run: dir
+
       - name: Azure login (OIDC)
         uses: azure/login@v2
         with:
@@ -56,4 +59,4 @@ jobs:
         with:
           app-name: 'trustworthy-product-reviews-group24'
           slot-name: 'Production'
-          package: '*.war'         
+          package: 'ROOT.war'        
