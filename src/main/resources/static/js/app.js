@@ -1,4 +1,5 @@
 import { supabaseClient, requireSession } from './auth.js';
+import { initializeProfileSection } from './profile.js';
 
 const userGreeting = document.getElementById('user-greeting');
 const profileName = document.getElementById('profile-name');
@@ -145,6 +146,7 @@ const openPasswordModal = () => {
 const initialiseAppPage = async () => {
     await requireSession();
     await refreshUserProfile();
+    await initializeProfileSection();
 
     // Profile dropdown functionality
     profileToggle?.addEventListener('click', (e) => {
