@@ -14,7 +14,7 @@ This is a **simplified foundation** with basic user authentication and a clean l
 - **Basic Dashboard**: Simple homepage after login with user profile management
 - **User Profile System**: 
   - View who you follow and who follows you
-  - Search for users by username or email (real-time autocomplete)
+  - Search for users by email
   - View other users' profiles and follow/unfollow them
 - **Social Features**: Follow/unfollow users to build your trust network
 - **Responsive Design**: Modern, mobile-friendly UI
