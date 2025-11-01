@@ -23,6 +23,9 @@ const closePasswordModal = document.getElementById('close-password-modal');
 const cancelDisplayName = document.getElementById('cancel-display-name');
 const cancelPassword = document.getElementById('cancel-password');
 
+//products elements
+const productsContainer = document.getElementById('products-container');
+
 const setStatus = (element, message, type = 'info') => {
     if (!element) return;
     element.textContent = message;
@@ -109,6 +112,36 @@ const refreshUserProfile = async () => {
     }
     if (displayNameInput) {
         displayNameInput.value = currentUser.user_metadata?.display_name ?? '';
+    }
+};
+
+const fetchAndDisplayProducts = async () => {
+    try {
+        const response = await fetch('http://localhost:8080/api/products'); // backend URL
+        if (!response.ok) throw new Error('Failed to fetch products');
+        const products = await response.json();
+
+        if (!productsContainer) return;
+
+        productsContainer.innerHTML = ''; // clear any existing content
+
+        products.forEach(product => {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.innerHTML = `
+                <img src="${product.image}" alt="${product.name}">
+                <h2>${product.name}</h2>
+                <p class="rating">⭐ ${product.avg_rating ?? 'N/A'}</p>
+                <a href="product.html?id=${product.product_id}">View Product</a>
+            `;
+
+            productsContainer.appendChild(card);
+        });
+    } catch (err) {
+        console.error('Error fetching products:', err);
+        if (productsContainer) {
+            productsContainer.innerHTML = '<p class="error">Failed to load products.</p>';
+        }
     }
 };
 
@@ -199,6 +232,7 @@ const initialiseAppPage = async () => {
         await supabaseClient.auth.signOut();
         window.location.replace('index.html');
     });
+        await fetchAndDisplayProducts();
 };
 
 if (document.body?.dataset?.page === 'app') {
