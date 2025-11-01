@@ -47,8 +47,25 @@
 <main class="dashboard">
     <section class="dashboard__sidebar">
         <article class="panel">
-            <h2>Quick Actions</h2>
-            <p>More features coming soon!</p>
+            <h2>Profile</h2>
+            <div class="profile-section">
+                <div class="profile-tabs">
+                    <button class="profile-tab active" id="following-tab">Following</button>
+                    <button class="profile-tab" id="followers-tab">Followers</button>
+                    <button class="profile-tab" id="search-users-tab">Search</button>
+                </div>
+                
+                <div class="profile-content" id="profile-content">
+                    <div class="profile-list" id="following-list"></div>
+                    <div class="profile-list hidden" id="followers-list"></div>
+                    <div class="hidden" id="search-users-section">
+                        <div class="search-users">
+                            <input type="text" id="user-search-input" placeholder="Search by email..." class="search-input">
+                            <div class="profile-list" id="search-results"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </article>
     </section>
     <section class="dashboard__content">
@@ -110,9 +127,33 @@
     </div>
 </div>
 
+<!-- User Profile Modal -->
+<div class="modal" id="user-profile-modal">
+    <div class="modal__content">
+        <div class="modal__header">
+            <h3 id="profile-modal-name">User Profile</h3>
+            <button class="modal__close" id="close-user-profile-modal">&times;</button>
+        </div>
+        <div class="modal__body" id="user-profile-modal-body">
+            <div class="profile-stats">
+                <div class="stat">
+                    <span class="stat-label">Following</span>
+                    <span class="stat-value" id="profile-following-count">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Followers</span>
+                    <span class="stat-value" id="profile-followers-count">0</span>
+                </div>
+            </div>
+            <button class="button" id="toggle-follow-button" style="width: 100%; margin-top: 1rem;">Follow</button>
+        </div>
+    </div>
+</div>
+
 <footer class="footer">&copy; <span id="year"></span> Trustworthy Product Reviews.</footer>
 
 <script type="module" src="js/auth.js"></script>
 <script type="module" src="js/app.js"></script>
+<script type="module" src="js/profile.js"></script>
 </body>
 </html>

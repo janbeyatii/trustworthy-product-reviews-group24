@@ -12,6 +12,11 @@ This is a **simplified foundation** with basic user authentication and a clean l
 - **User Authentication**: Complete user CRUD operations using Supabase
 - **Login/Signup Flow**: Users can create accounts and log in
 - **Basic Dashboard**: Simple homepage after login with user profile management
+- **User Profile System**: 
+  - View who you follow and who follows you
+  - Search for users by email
+  - View other users' profiles and follow/unfollow them
+- **Social Features**: Follow/unfollow users to build your trust network
 - **Responsive Design**: Modern, mobile-friendly UI
 
 ### Coming Soon
@@ -19,7 +24,6 @@ This is a **simplified foundation** with basic user authentication and a clean l
 The following features will be added incrementally:
 
 - Write and manage product reviews
-- Follow trusted reviewers  
 - Browse products by category and rating
 - Discover similar users using Jaccard distance
 - View trust network analytics
@@ -66,3 +70,15 @@ SUPABASE_DATABASE_URL=your_database_url
 SUPABASE_DATABASE_USERNAME=your_database_username
 SUPABASE_DATABASE_PASSWORD=your_database_password
 ```
+
+## Using the Profile Feature
+
+Once logged in, you can:
+
+1. **View Who You Follow**: Click the "Following" tab in the Profile section
+2. **View Who Follows You**: Click the "Followers" tab
+3. **Search for Users**: 
+   - Click the "Search" tab
+   - Start typing an email
+   - Matching users will appear
+4. **View User Profiles**: Click on any user to see their profile and follow/unfollow them
