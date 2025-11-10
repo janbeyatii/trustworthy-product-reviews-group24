@@ -37,13 +37,26 @@ public class SupabaseJwtService {
 
     @PostConstruct
     void initializeDecoder() {
-        if (properties != null && properties.hasJwtSecret()) {
+        if (properties == null) {
+            log.warn("Supabase properties not configured. API requests will not be authenticated.");
+            return;
+        }
+
+        if (properties.hasJwtSecret()) {
             SecretKey secretKey = new SecretKeySpec(properties.getJwtSecret().getBytes(StandardCharsets.UTF_8), "HmacSHA256");
             this.jwtDecoder = NimbusJwtDecoder.withSecretKey(secretKey).macAlgorithm(HS256).build();
             log.info("Supabase JWT decoder initialised with provided secret.");
-        } else {
-            log.warn("Supabase JWT secret not provided. API requests will not be authenticated.");
+            return;
         }
+
+        if (StringUtils.hasText(properties.getUrl())) {
+            String jwkSetUri = properties.getUrl().replaceAll("/+$", "") + "/auth/v1/keys";
+            this.jwtDecoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+            log.info("Supabase JWT decoder initialised using remote JWKS: {}", jwkSetUri);
+            return;
+        }
+
+        log.warn("Supabase JWT secret or JWKS endpoint not configured. API requests will not be authenticated.");
     }
 
     public Optional<Authentication> authenticate(String token) {

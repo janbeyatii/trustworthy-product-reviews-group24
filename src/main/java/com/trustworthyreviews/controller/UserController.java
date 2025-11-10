@@ -67,4 +67,32 @@ public class UserController {
             return ResponseEntity.status(500).body(Map.of("message", "Error fetching user: " + e.getMessage()));
         }
     }
+
+    @GetMapping("/users/me/following")
+    public ResponseEntity<?> getCurrentUserFollowing() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof SupabaseUser user)) {
+            return ResponseEntity.status(401).body(Map.of("message", "Not authenticated"));
+        }
+
+        try {
+            return ResponseEntity.ok(userService.getFollowingForUser(user.getId()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("message", "Error fetching following: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/users/me/followers")
+    public ResponseEntity<?> getCurrentUserFollowers() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof SupabaseUser user)) {
+            return ResponseEntity.status(401).body(Map.of("message", "Not authenticated"));
+        }
+
+        try {
+            return ResponseEntity.ok(userService.getFollowersForUser(user.getId()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("message", "Error fetching followers: " + e.getMessage()));
+        }
+    }
 }
