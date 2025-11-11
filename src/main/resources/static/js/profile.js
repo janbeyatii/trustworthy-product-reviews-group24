@@ -112,26 +112,15 @@ async function loadFollowing() {
         }
 
         // Display users with their email addresses
-        for (const relation of followingUsers) {
+        const profiles = await Promise.all(followingUsers.map(async (relation) => {
             const userId = relation.following;
-            
-            // Try to fetch user details
-            try {
-                const userDetails = await fetchUserDetails(userId);
-                if (userDetails && userDetails.email) {
-                    const userItem = createUserItem({ email: userDetails.email }, userId);
-                    followingList.appendChild(userItem);
-                } else {
-                    // Fallback to showing UUID
-                    const userItem = createUserItem({ email: userId.substring(0, 20) + '...' }, userId);
-                    followingList.appendChild(userItem);
-                }
-            } catch (error) {
-                console.error('Error fetching user details:', error);
-                // Fallback to showing UUID
-                const userItem = createUserItem({ email: userId.substring(0, 20) + '...' }, userId);
-                followingList.appendChild(userItem);
-            }
+            const userDetails = await fetchUserDetails(userId);
+            return { userId, userDetails };
+        }));
+
+        for (const { userId, userDetails } of profiles) {
+            const userItem = createUserItem(userDetails, userId);
+            followingList.appendChild(userItem);
         }
     } catch (error) {
         console.error('Error loading following:', error);
@@ -162,26 +151,15 @@ async function loadFollowers() {
         }
 
         // Display users with their email addresses
-        for (const relation of followersUsers) {
+        const profiles = await Promise.all(followersUsers.map(async (relation) => {
             const userId = relation.uid;
-            
-            // Try to fetch user details
-            try {
-                const userDetails = await fetchUserDetails(userId);
-                if (userDetails && userDetails.email) {
-                    const userItem = createUserItem({ email: userDetails.email }, userId);
-                    followersList.appendChild(userItem);
-                } else {
-                    // Fallback to showing UUID
-                    const userItem = createUserItem({ email: userId.substring(0, 20) + '...' }, userId);
-                    followersList.appendChild(userItem);
-                }
-            } catch (error) {
-                console.error('Error fetching user details:', error);
-                // Fallback to showing UUID
-                const userItem = createUserItem({ email: userId.substring(0, 20) + '...' }, userId);
-                followersList.appendChild(userItem);
-            }
+            const userDetails = await fetchUserDetails(userId);
+            return { userId, userDetails };
+        }));
+
+        for (const { userId, userDetails } of profiles) {
+            const userItem = createUserItem(userDetails, userId);
+            followersList.appendChild(userItem);
         }
     } catch (error) {
         console.error('Error loading followers:', error);
@@ -193,11 +171,13 @@ function createUserItem(user, userId) {
     const item = document.createElement('div');
     item.className = 'profile-item';
     
-    const email = user.email || 'Unknown';
+    const email = user?.email || (userId ? `${userId.substring(0, 8)}…` : 'Email unavailable');
+    const displayName = user?.display_name;
 
     item.innerHTML = `
         <div class="profile-item-info" data-user-id="${userId}">
             <div class="profile-item-name">${escapeHtml(email)}</div>
+            ${displayName ? `<div class="profile-item-email">${escapeHtml(displayName)}</div>` : ''}
         </div>
         <button class="button profile-action-btn">View</button>
     `;
@@ -443,6 +423,9 @@ async function fetchUserDetails(userId) {
         if (response.ok) {
             return await response.json();
         }
+
+        const errorBody = await response.json().catch(() => ({}));
+        console.warn(`Failed to load user ${userId}:`, errorBody.message || response.statusText);
     } catch (error) {
         console.error('Error fetching user details:', error);
     }
