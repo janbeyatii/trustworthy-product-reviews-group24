@@ -84,7 +84,7 @@ Once logged in, you can:
 4. **View User Profiles**: Click on any user to see their profile and follow/unfollow them
 
 ### Data Base Schema 
-'''bash
+```bash
 #1. Products Table
 CREATE TABLE public.products (
   product_id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
@@ -118,4 +118,4 @@ CREATE TABLE public.reviews (
   CONSTRAINT reviews_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(product_id),
   CONSTRAINT reviews_UID_fkey FOREIGN KEY (UID) REFERENCES auth.users(id)
 );
-'''
+```
