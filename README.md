@@ -84,6 +84,9 @@ Once logged in, you can:
 4. **View User Profiles**: Click on any user to see their profile and follow/unfollow them
 
 ## Data Base Schema 
+
+The database schemas used in the project
+
 ```bash
 #1. Products Table
 CREATE TABLE public.products (
