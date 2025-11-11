@@ -84,7 +84,8 @@ Once logged in, you can:
 4. **View User Profiles**: Click on any user to see their profile and follow/unfollow them
 
 ### Data Base Schema 
-1. Products Table
+'''bash
+#1. Products Table
 CREATE TABLE public.products (
   product_id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   name text NOT NULL,
@@ -96,7 +97,7 @@ CREATE TABLE public.products (
   CONSTRAINT products_pkey PRIMARY KEY (product_id)
 );
 
-2. Followers/Following Table 
+#2. Followers/Following Table 
 CREATE TABLE public.relations (
   id bigint NOT NULL DEFAULT nextval('relations_id_seq'::regclass),
   uid uuid NOT NULL,
@@ -107,7 +108,7 @@ CREATE TABLE public.relations (
   CONSTRAINT relations_following_fkey FOREIGN KEY (following) REFERENCES auth.users(id)
 );
 
-3. Reviews Table
+#3. Reviews Table
 CREATE TABLE public.reviews (
   product_id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   review_rating smallint NOT NULL,
@@ -117,3 +118,4 @@ CREATE TABLE public.reviews (
   CONSTRAINT reviews_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(product_id),
   CONSTRAINT reviews_UID_fkey FOREIGN KEY (UID) REFERENCES auth.users(id)
 );
+'''
