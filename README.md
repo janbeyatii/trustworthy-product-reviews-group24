@@ -83,7 +83,7 @@ Once logged in, you can:
    - Matching users will appear
 4. **View User Profiles**: Click on any user to see their profile and follow/unfollow them
 
-### Data Base Schema 
+## Data Base Schema 
 ```bash
 #1. Products Table
 CREATE TABLE public.products (
