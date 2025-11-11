@@ -117,7 +117,8 @@ const refreshUserProfile = async () => {
 
 const fetchAndDisplayProducts = async () => {
     try {
-        const response = await fetch('http://localhost:8080/api/products'); // backend URL
+        const baseUrl = window.__API_BASE_URL__ ?? window.location.origin;
+        const response = await fetch(`${baseUrl}/api/products`);
         if (!response.ok) throw new Error('Failed to fetch products');
         const products = await response.json();
 
