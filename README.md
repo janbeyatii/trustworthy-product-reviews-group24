@@ -85,7 +85,7 @@ Once logged in, you can:
 
 ## Data Base Schema 
 
-The database schemas used in the project
+The database tables used in the project
 
 ```bash
 #1. Products Table
