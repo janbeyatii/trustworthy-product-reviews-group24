@@ -82,3 +82,43 @@ Once logged in, you can:
    - Start typing an email
    - Matching users will appear
 4. **View User Profiles**: Click on any user to see their profile and follow/unfollow them
+
+## Data Base Schema 
+
+The database tables used in the project
+
+```bash
+#1. Products Table
+CREATE TABLE public.products (
+  product_id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  name text NOT NULL,
+  avg_rating double precision,
+  description text,
+  image text,
+  category text,
+  link text,
+  CONSTRAINT products_pkey PRIMARY KEY (product_id)
+);
+
+#2. Followers/Following Table 
+CREATE TABLE public.relations (
+  id bigint NOT NULL DEFAULT nextval('relations_id_seq'::regclass),
+  uid uuid NOT NULL,
+  following uuid NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT relations_pkey PRIMARY KEY (id),
+  CONSTRAINT relations_uid_fkey FOREIGN KEY (uid) REFERENCES auth.users(id),
+  CONSTRAINT relations_following_fkey FOREIGN KEY (following) REFERENCES auth.users(id)
+);
+
+#3. Reviews Table
+CREATE TABLE public.reviews (
+  product_id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  review_rating smallint NOT NULL,
+  review_desc text,
+  UID uuid,
+  CONSTRAINT reviews_pkey PRIMARY KEY (product_id),
+  CONSTRAINT reviews_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(product_id),
+  CONSTRAINT reviews_UID_fkey FOREIGN KEY (UID) REFERENCES auth.users(id)
+);
+```
