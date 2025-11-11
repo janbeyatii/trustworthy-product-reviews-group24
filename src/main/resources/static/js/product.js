@@ -9,7 +9,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-        const res = await fetch(`http://localhost:8080/api/products/${productId}`);
+        const baseUrl = window.__API_BASE_URL__ ?? window.location.origin;
+        const res = await fetch(`${baseUrl}/api/products/${productId}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const product = await res.json();
         console.log('Fetched product:', product);
