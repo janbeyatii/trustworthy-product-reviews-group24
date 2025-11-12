@@ -17,13 +17,19 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    /**
+     * Returns information about the currently authenticated user.
+     */
     @GetMapping("/whoami")
     public ResponseEntity<?> whoAmI() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // Check if user is authenticated and is of type SupabaseUser
         if (authentication == null || !(authentication.getPrincipal() instanceof SupabaseUser user)) {
             return ResponseEntity.status(401).body(Map.of("message", "Not authenticated"));
         }
 
+        // Return user details
         return ResponseEntity.ok(Map.of(
                 "id", user.getId(),
                 "email", user.getEmail(),
@@ -31,13 +37,18 @@ public class UserController {
         ));
     }
 
+    /**
+     * Searches users based on a query string (typically email or username).
+     */
     @GetMapping("/users/search")
     public ResponseEntity<?> searchUsers(@RequestParam String query) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
         if (authentication == null || !(authentication.getPrincipal() instanceof SupabaseUser)) {
             return ResponseEntity.status(401).body(Map.of("message", "Not authenticated"));
         }
 
+        // Return empty list if query is blank
         if (query == null || query.trim().isEmpty()) {
             return ResponseEntity.ok(List.of());
         }
@@ -50,9 +61,13 @@ public class UserController {
         }
     }
 
+    /**
+     * Retrieves a specific user's profile by user ID.
+     */
     @GetMapping("/users/{userId}")
     public ResponseEntity<?> getUserProfile(@PathVariable String userId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
         if (authentication == null || !(authentication.getPrincipal() instanceof SupabaseUser)) {
             return ResponseEntity.status(401).body(Map.of("message", "Not authenticated"));
         }
@@ -68,9 +83,13 @@ public class UserController {
         }
     }
 
+    /**
+     * Retrieves the list of users that the currently authenticated user is following.
+     */
     @GetMapping("/users/me/following")
     public ResponseEntity<?> getCurrentUserFollowing() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
         if (authentication == null || !(authentication.getPrincipal() instanceof SupabaseUser user)) {
             return ResponseEntity.status(401).body(Map.of("message", "Not authenticated"));
         }
@@ -82,9 +101,13 @@ public class UserController {
         }
     }
 
+    /**
+     * Retrieves the list of users who follow the currently authenticated user.
+     */
     @GetMapping("/users/me/followers")
     public ResponseEntity<?> getCurrentUserFollowers() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
         if (authentication == null || !(authentication.getPrincipal() instanceof SupabaseUser user)) {
             return ResponseEntity.status(401).body(Map.of("message", "Not authenticated"));
         }
