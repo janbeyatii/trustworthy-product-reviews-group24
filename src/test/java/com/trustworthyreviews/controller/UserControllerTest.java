@@ -29,208 +29,168 @@ class UserControllerTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         SecurityContextHolder.clearContext();
-        log("Mocks initialized, security cleared");
-    }
-
-    // Logging helpers
-    private void log(String msg) {
-        System.out.println(">>> " + msg);
-    }
-
-    private void logStart(String name) {
-        System.out.println("\n=== Running " + name + " ===");
-    }
-
-    private void logData(Object data) {
-        System.out.println("Data: " + data);
     }
 
     private void mockAuth(SupabaseUser user) {
         UsernamePasswordAuthenticationToken auth =
                 new UsernamePasswordAuthenticationToken(user, null, List.of());
         SecurityContextHolder.getContext().setAuthentication(auth);
-        log("Authenticated as: " + user.getEmail());
+        System.out.println("Authenticated as: " + user.getEmail());
     }
 
-
-    // whoAmI
     @Test
-    void whoAmI() {
-        logStart("whoAmI test");
+    void whoAmI_test() {
+        System.out.println("Running whoAmI test");
 
-        // Authenticated
-        SupabaseUser u = new SupabaseUser("1", "test@mail.com", Map.of());
-        mockAuth(u);
+        SupabaseUser user = new SupabaseUser("1", "test@mail.com", Map.of());
+        mockAuth(user);
 
-        ResponseEntity<?> authRes = userController.whoAmI();
-        logData(authRes);
+        ResponseEntity<?> res = userController.whoAmI();
+        System.out.println("Mock service (authenticated user) result: " + res.getBody());
 
-        assertEquals(200, authRes.getStatusCodeValue());
-        Map<?, ?> body = (Map<?, ?>) authRes.getBody();
+        assertEquals(200, res.getStatusCodeValue());
+        Map<?, ?> body = (Map<?, ?>) res.getBody();
         assertEquals("1", body.get("id"));
         assertEquals("test@mail.com", body.get("email"));
 
         // Unauthenticated
         SecurityContextHolder.clearContext();
-        log("Auth cleared");
+        System.out.println("Authentication cleared");
 
         ResponseEntity<?> unauthRes = userController.whoAmI();
-        logData(unauthRes);
+        System.out.println("Mock service (unauthenticated) result: " + unauthRes.getBody());
 
         assertEquals(401, unauthRes.getStatusCodeValue());
+        System.out.println("whoAmI test completed\n");
     }
 
-
     @Test
-    void searchUsers() {
-        logStart("searchUsers test");
+    void searchUsers_test() {
+        System.out.println("Running searchUsers test");
 
         SupabaseUser user = new SupabaseUser("50", "me@mail.com", Map.of());
         mockAuth(user);
 
-        // Exact email match
-        List<Map<String, Object>> mockUsers = List.of(
-                Map.of("id", "11", "email", "a@mail.com")
-        );
-        logData(mockUsers);
-
+        List<Map<String, Object>> mockUsers = List.of(Map.of("id", "11", "email", "a@mail.com"));
         when(userService.searchUsers("a@mail.com")).thenReturn(mockUsers);
-        log("searchUsers(\"a@mail.com\")");
 
-        ResponseEntity<?> result1 = userController.searchUsers("a@mail.com");
-        logData(result1);
+        System.out.println("Query: 'a@mail.com'");
+        System.out.println("Mock service will return: " + mockUsers);
 
-        assertEquals(200, result1.getStatusCodeValue());
-        assertEquals(mockUsers, result1.getBody());
-        assertEquals(1, ((List<?>) result1.getBody()).size());   // only 1 user returned
-        assertEquals("a@mail.com", ((Map<?, ?>)((List<?>) result1.getBody()).get(0)).get("email"));
+        ResponseEntity<?> res = userController.searchUsers("a@mail.com");
+        System.out.println("Result: " + res.getBody());
+
+        assertEquals(200, res.getStatusCodeValue());
+        assertEquals(mockUsers, res.getBody());
 
         // Empty query
-        ResponseEntity<?> result2 = userController.searchUsers("   ");
-        logData(result2);
-        assertTrue(((List<?>) result2.getBody()).isEmpty());
+        ResponseEntity<?> emptyRes = userController.searchUsers("   ");
+        System.out.println("Query: '   ' (empty)");
+        System.out.println("Result: " + emptyRes.getBody());
+
+        assertEquals(200, emptyRes.getStatusCodeValue());
+        assertTrue(((List<?>) emptyRes.getBody()).isEmpty());
 
         // Unauthenticated
         SecurityContextHolder.clearContext();
-        log("Auth cleared");
+        System.out.println("Authentication cleared");
 
-        ResponseEntity<?> result3 = userController.searchUsers("x@mail.com");
-        logData(result3);
+        ResponseEntity<?> unauthRes = userController.searchUsers("x@mail.com");
+        System.out.println("Query: 'x@mail.com' (unauthenticated)");
+        System.out.println("Result: " + unauthRes.getBody());
 
-        assertEquals(401, result3.getStatusCodeValue());
+        assertEquals(401, unauthRes.getStatusCodeValue());
+        System.out.println("searchUsers test completed\n");
     }
 
-
-    // getUserProfile
     @Test
-    void getUserProfile() {
-        logStart("getUserProfile test");
+    void getUserProfile_test() {
+        System.out.println("Running getUserProfile test");
 
         SupabaseUser user = new SupabaseUser("10", "auth@test.com", Map.of());
         mockAuth(user);
 
-        // Found
-        Map<String, Object> mockUser = Map.of(
-                "id", "999",
-                "email", "target@mail.com",
-                "name", "Target User"
-        );
-        logData(mockUser);
-
+        Map<String, Object> mockUser = Map.of("id", "999", "email", "target@mail.com", "name", "Target User");
         when(userService.getUserById("999")).thenReturn(mockUser);
-        log("getUserById(\"999\")");
 
-        ResponseEntity<?> result1 = userController.getUserProfile("999");
-        logData(result1);
+        System.out.println("Query: getUserProfile('999')");
+        System.out.println("Mock service will return: " + mockUser);
 
-        assertEquals(200, result1.getStatusCodeValue());
-        assertEquals(mockUser, result1.getBody());
+        ResponseEntity<?> res = userController.getUserProfile("999");
+        System.out.println("Result: " + res.getBody());
+
+        assertEquals(200, res.getStatusCodeValue());
+        assertEquals(mockUser, res.getBody());
 
         // Not found
         when(userService.getUserById("200")).thenReturn(null);
-        log("getUserById(\"200\")");
+        ResponseEntity<?> notFoundRes = userController.getUserProfile("200");
+        System.out.println("Query: getUserProfile('200')");
+        System.out.println("Result: " + notFoundRes.getBody());
 
-        ResponseEntity<?> result2 = userController.getUserProfile("200");
-        logData(result2);
-
-        assertEquals(404, result2.getStatusCodeValue());
+        assertEquals(404, notFoundRes.getStatusCodeValue());
 
         // Unauthenticated
         SecurityContextHolder.clearContext();
-        log("Auth cleared");
+        ResponseEntity<?> unauthRes = userController.getUserProfile("777");
+        System.out.println("Query: getUserProfile('777') (unauthenticated)");
+        System.out.println("Result: " + unauthRes.getBody());
 
-        ResponseEntity<?> result3 = userController.getUserProfile("777");
-        logData(result3);
-
-        assertEquals(401, result3.getStatusCodeValue());
+        assertEquals(401, unauthRes.getStatusCodeValue());
+        System.out.println("getUserProfile test completed\n");
     }
 
-
-    // following
     @Test
-    void following() {
-        logStart("following test");
+    void following_test() {
+        System.out.println("Running following test");
 
         SupabaseUser user = new SupabaseUser("500", "testf@mail.com", Map.of());
         mockAuth(user);
 
-        List<Map<String, Object>> mockData = List.of(
-                Map.of("email", "test1@mail.com"),
-                Map.of("email", "test2@mail.com")
-        );
-        logData(mockData);
-
+        List<Map<String, Object>> mockData = List.of(Map.of("email", "test1@mail.com"), Map.of("email", "test2@mail.com"));
         when(userService.getFollowingForUser("500")).thenReturn(mockData);
-        log("getFollowingForUser(\"500\")");
 
-        // Authenticated
-        ResponseEntity<?> result1 = userController.getCurrentUserFollowing();
-        logData(result1);
+        System.out.println("Mock service will return: " + mockData);
 
-        assertEquals(200, result1.getStatusCodeValue());
-        assertEquals(mockData, result1.getBody());
+        ResponseEntity<?> res = userController.getCurrentUserFollowing();
+        System.out.println("Result: " + res.getBody());
+
+        assertEquals(200, res.getStatusCodeValue());
+        assertEquals(mockData, res.getBody());
 
         // Unauthenticated
         SecurityContextHolder.clearContext();
-        log("Auth cleared");
+        ResponseEntity<?> unauthRes = userController.getCurrentUserFollowing();
+        System.out.println("Result (unauthenticated): " + unauthRes.getBody());
 
-        ResponseEntity<?> result2 = userController.getCurrentUserFollowing();
-        logData(result2);
-
-        assertEquals(401, result2.getStatusCodeValue());
+        assertEquals(401, unauthRes.getStatusCodeValue());
+        System.out.println("following test completed\n");
     }
 
-    // followers
     @Test
-    void followers() {
-        logStart("followers test");
+    void followers_test() {
+        System.out.println("Running followers test");
 
         SupabaseUser user = new SupabaseUser("600", "testf@mail.com", Map.of());
         mockAuth(user);
 
-        List<Map<String, Object>> mockData = List.of(
-                Map.of("email", "test1@mail.com"),
-                Map.of("email", "test2@mail.com")
-        );
-        logData(mockData);
-
+        List<Map<String, Object>> mockData = List.of(Map.of("email", "test1@mail.com"), Map.of("email", "test2@mail.com"));
         when(userService.getFollowersForUser("600")).thenReturn(mockData);
-        log("getFollowersForUser(\"600\")");
 
-        // Authenticated
-        ResponseEntity<?> result1 = userController.getCurrentUserFollowers();
-        logData(result1);
+        System.out.println("Mock service will return: " + mockData);
 
-        assertEquals(200, result1.getStatusCodeValue());
-        assertEquals(mockData, result1.getBody());
+        ResponseEntity<?> res = userController.getCurrentUserFollowers();
+        System.out.println("Result: " + res.getBody());
+
+        assertEquals(200, res.getStatusCodeValue());
+        assertEquals(mockData, res.getBody());
 
         // Unauthenticated
         SecurityContextHolder.clearContext();
-        log("Auth cleared");
+        ResponseEntity<?> unauthRes = userController.getCurrentUserFollowers();
+        System.out.println("Result (unauthenticated): " + unauthRes.getBody());
 
-        ResponseEntity<?> result2 = userController.getCurrentUserFollowers();
-        logData(result2);
-
-        assertEquals(401, result2.getStatusCodeValue());
+        assertEquals(401, unauthRes.getStatusCodeValue());
+        System.out.println("followers test completed\n");
     }
 }
