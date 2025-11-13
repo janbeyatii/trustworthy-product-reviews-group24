@@ -14,7 +14,7 @@ public class ProductService {
     private JdbcTemplate jdbcTemplate;
 
     /**
-     * Get all products (limit 20 for performance)
+     * Get all products
      */
     public List<Map<String, Object>> getAllProducts() {
         String sql = """
