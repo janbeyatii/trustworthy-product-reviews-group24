@@ -48,7 +48,20 @@ public class UserService {
      */
     public List<Map<String, Object>> searchUsers(String query) {
         try {
-            // Check for simulation failure marker (for circuit breaker testing)
+            /**
+             * Circuit Breaker Testing: Failure Simulation
+             * 
+             * If the query starts with "__SIMULATE_FAILURE__", this method throws an exception
+             * to simulate a database failure. This is used by the CircuitBreakerDebugController
+             * to test circuit breaker behavior without requiring actual database failures.
+             * 
+             * The failure marker is added by the debug controller when failure simulation is enabled.
+             * The exception occurs inside the Hystrix command, so it's properly tracked by the
+             * circuit breaker metrics.
+             * 
+             * WARNING: This is for testing only. In production, this check could be removed
+             * or gated behind a feature flag.
+             */
             if (query != null && query.startsWith("__SIMULATE_FAILURE__")) {
                 throw new RuntimeException("Simulated database failure for circuit breaker testing");
             }

@@ -17,9 +17,23 @@ public class ProductService {
      * Get all products
      */
     public List<Map<String, Object>> getAllProducts() {
-        // Check for simulation failure marker (for circuit breaker testing)
-        // This is a hack - in real scenario, you'd check a flag from CircuitBreakerDebugController
-        // For now, we'll use a thread-local or check a system property
+        /**
+         * Circuit Breaker Testing: Failure Simulation
+         * 
+         * Checks a system property "circuit.breaker.simulate.product.failure" to determine
+         * if a failure should be simulated. This property is set by CircuitBreakerDebugController
+         * when failure simulation is enabled for ProductService.
+         * 
+         * When the property is "true", this method throws an exception to simulate a database
+         * failure. The exception occurs inside the Hystrix command, so it's properly tracked
+         * by the circuit breaker metrics.
+         * 
+         * The property is set before the Hystrix call and cleared after (in the debug controller),
+         * ensuring it only affects the intended test request.
+         * 
+         * WARNING: This is for testing only. In production, this check could be removed
+         * or gated behind a feature flag.
+         */
         if (Boolean.getBoolean("circuit.breaker.simulate.product.failure")) {
             throw new RuntimeException("Simulated database failure for circuit breaker testing");
         }
