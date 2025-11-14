@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circuit Breaker Debug Dashboard</title>
+    <link rel="stylesheet" href="css/index.css">
+    <style>
+        .debug-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+        .circuit-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .circuit-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+        }
+        .circuit-card.open {
+            border-color: var(--danger);
+            background: rgba(248, 113, 113, 0.1);
+        }
+        .circuit-card.closed {
+            border-color: #86efac;
+            background: rgba(134, 239, 172, 0.1);
+        }
+        .circuit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .circuit-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        .circuit-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .circuit-badge.open {
+            background: var(--danger);
+            color: #fff;
+        }
+        .circuit-badge.closed {
+            background: #86efac;
+            color: #0b1120;
+        }
+        .circuit-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        }
+        .metric:last-child {
+            border-bottom: none;
+        }
+        .metric-label {
+            color: var(--muted);
+        }
+        .metric-value {
+            font-weight: 600;
+        }
+        .controls {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .control-group {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+        .test-results {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        .test-result {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+            border-left: 4px solid;
+        }
+        .test-result.success {
+            background: rgba(134, 239, 172, 0.1);
+            border-color: #86efac;
+        }
+        .test-result.failure {
+            background: rgba(248, 113, 113, 0.1);
+            border-color: var(--danger);
+        }
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1>Circuit Breaker Debug Dashboard</h1>
+        <p style="color: var(--muted); margin-bottom: 2rem;">
+            Monitor and test Hystrix circuit breaker behavior in real-time
+        </p>
+        
+        <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid var(--accent); border-radius: 0.75rem; padding: 1rem; margin-bottom: 2rem;">
+            <strong>💡 How to Test Circuit Breaker:</strong>
+            <ul style="margin: 0.5rem 0 0 1.5rem; color: var(--muted);">
+                <li>Make multiple requests using the test buttons below</li>
+                <li>To simulate failures: Temporarily stop your database or cause connection errors</li>
+                <li>Watch the circuit breaker open when error rate exceeds 50% after 10+ requests</li>
+                <li>Circuit will attempt recovery after 5 seconds (half-open state)</li>
+            </ul>
+        </div>
+
+        <div class="controls">
+            <h3>Simulation Controls</h3>
+            <div class="control-group">
+                <button class="button" id="toggle-user-failure">Enable UserService Failures</button>
+                <span id="user-failure-status" style="color: var(--muted);">Disabled</span>
+            </div>
+            <div class="control-group">
+                <button class="button" id="toggle-product-failure">Enable ProductService Failures</button>
+                <span id="product-failure-status" style="color: var(--muted);">Disabled</span>
+            </div>
+            <div class="control-group">
+                <button class="button" id="test-user-search">Test User Search</button>
+                <button class="button" id="test-products">Test Products</button>
+                <button class="button button--ghost" id="refresh-status">Refresh Status</button>
+            </div>
+            <div class="control-group">
+                <button class="button" id="stress-test-user" style="background: var(--danger);">Stress Test UserService (15 requests)</button>
+                <button class="button" id="stress-test-product" style="background: var(--danger);">Stress Test ProductService (15 requests)</button>
+            </div>
+        </div>
+
+        <div class="circuit-status" id="circuit-status">
+            <div class="circuit-card">
+                <div class="circuit-header">
+                    <span class="circuit-name">Loading...</span>
+                    <span class="circuit-badge">-</span>
+                </div>
+                <div class="circuit-metrics">
+                    <div class="metric">
+                        <span class="metric-label">Status</span>
+                        <span class="metric-value">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-results" id="test-results" style="display: none;">
+            <h3>Test Results</h3>
+            <div id="test-results-content"></div>
+        </div>
+    </div>
+
+    <script type="module" src="js/debug.js"></script>
+</body>
+</html>
+

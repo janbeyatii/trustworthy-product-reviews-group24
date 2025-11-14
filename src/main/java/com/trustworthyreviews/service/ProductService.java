@@ -17,6 +17,13 @@ public class ProductService {
      * Get all products
      */
     public List<Map<String, Object>> getAllProducts() {
+        // Check for simulation failure marker (for circuit breaker testing)
+        // This is a hack - in real scenario, you'd check a flag from CircuitBreakerDebugController
+        // For now, we'll use a thread-local or check a system property
+        if (Boolean.getBoolean("circuit.breaker.simulate.product.failure")) {
+            throw new RuntimeException("Simulated database failure for circuit breaker testing");
+        }
+        
         String sql = """
             SELECT 
                 product_id,

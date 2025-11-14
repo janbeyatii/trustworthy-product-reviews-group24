@@ -48,6 +48,11 @@ public class UserService {
      */
     public List<Map<String, Object>> searchUsers(String query) {
         try {
+            // Check for simulation failure marker (for circuit breaker testing)
+            if (query != null && query.startsWith("__SIMULATE_FAILURE__")) {
+                throw new RuntimeException("Simulated database failure for circuit breaker testing");
+            }
+            
             // Query auth.users table to find users matching the query
             String sql = """
                 SELECT 
