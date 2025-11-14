@@ -1,7 +1,7 @@
 package com.trustworthyreviews.controller;
 
 import com.trustworthyreviews.security.SupabaseJwtService;
-import com.trustworthyreviews.service.ProductService;
+import com.trustworthyreviews.service.HystrixProductService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ class ProductControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private ProductService productService;
+    private HystrixProductService hystrixProductService;
 
     @MockBean
     private SupabaseJwtService supabaseJwtService;
@@ -57,7 +57,7 @@ class ProductControllerTest {
     @Test
     void getAllProducts() throws Exception {
         logStart("getAllProducts");
-        when(productService.getAllProducts()).thenReturn(mockProducts);
+        when(hystrixProductService.getAllProducts()).thenReturn(mockProducts);
         logData(mockProducts);
 
         var result = mockMvc.perform(get("/api/products"))
@@ -66,7 +66,7 @@ class ProductControllerTest {
 
         log("Result: " + result.getResponse().getContentAsString());
         log("getAllProducts test completed");
-        verify(productService, times(1)).getAllProducts();
+        verify(hystrixProductService, times(1)).getAllProducts();
     }
 
     @Test
@@ -74,7 +74,7 @@ class ProductControllerTest {
         Map<String, Object> product = Map.of("id", 1, "name", "Ryzen 7 5800x3d", "category", "cpu");
 
         logStart("getProductById");
-        when(productService.getProductById(1)).thenReturn(product);
+        when(hystrixProductService.getProductById(1)).thenReturn(product);
         logData(product);
 
         var result = mockMvc.perform(get("/api/products/1"))
@@ -83,7 +83,7 @@ class ProductControllerTest {
 
         log("Result: " + result.getResponse().getContentAsString());
         log("getProductById test completed");
-        verify(productService, times(1)).getProductById(1);
+        verify(hystrixProductService, times(1)).getProductById(1);
     }
 
     @Test
@@ -94,7 +94,7 @@ class ProductControllerTest {
         );
 
         logStart("searchProductsByCategory");
-        when(productService.searchProducts("cpu")).thenReturn(searchResult);
+        when(hystrixProductService.searchProducts("cpu")).thenReturn(searchResult);
         logData(searchResult);
 
         var result = mockMvc.perform(get("/api/products/search").param("q", "cpu"))
@@ -103,7 +103,7 @@ class ProductControllerTest {
 
         log("Result: " + result.getResponse().getContentAsString());
         log("searchProductsByCategory test completed");
-        verify(productService, times(1)).searchProducts("cpu");
+        verify(hystrixProductService, times(1)).searchProducts("cpu");
     }
 
     @Test
@@ -113,7 +113,7 @@ class ProductControllerTest {
         );
 
         logStart("searchProductsByName");
-        when(productService.searchProducts("RTX 4090")).thenReturn(searchResult);
+        when(hystrixProductService.searchProducts("RTX 4090")).thenReturn(searchResult);
         logData(searchResult);
 
         var result = mockMvc.perform(get("/api/products/search").param("q", "RTX 4090"))
@@ -122,6 +122,6 @@ class ProductControllerTest {
 
         log("Result: " + result.getResponse().getContentAsString());
         log("searchProductsByName test completed");
-        verify(productService, times(1)).searchProducts("RTX 4090");
+        verify(hystrixProductService, times(1)).searchProducts("RTX 4090");
     }
 }
