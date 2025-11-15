@@ -150,7 +150,7 @@ public class UserService {
     public List<Map<String, Object>> getFollowersForUser(String userId) {
         try {
             String sql = """
-                SELECT 
+                SELECT
                     u.id,
                     u.email,
                     u.raw_user_meta_data
@@ -166,6 +166,30 @@ public class UserService {
         } catch (Exception e) {
             log.error("Error fetching followers for user {}: {}", userId, e.getMessage(), e);
             throw new RuntimeException("Error fetching followers: " + e.getMessage(), e);
+        }
+    }
+
+    public List<Map<String, Object>> getRecommendedUsers(String userId){
+        try {
+            String sql = """
+                SELECT
+                *
+                FROM public.product_reviews
+                WHERE public.product_reviews.product_id
+                IN (SELECT
+                    public.product_reviews.product_id
+                    FROM
+                    public.product_reviews
+                    WHERE
+                    public.product_reviews.uid = ?)
+            """;
+            List<Map<String, Object>> users = jdbcTemplate.queryForList(sql, userId);
+            System.out.println("PRINTING USERS");
+            System.out.println(users);
+            return users;
+        } catch (Exception e) {
+            log.error("Error fetch recommended users for user {}: {}", userId, e.getMessage(), e);
+            throw new RuntimeException("Error fetching recommended users: " + e.getMessage(), e);
         }
     }
 

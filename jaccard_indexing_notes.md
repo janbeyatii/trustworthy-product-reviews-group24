@@ -36,8 +36,14 @@ Then, we iterate over each of those reviews, which gets us a list of all the *ot
 
 Or. No. Maybe what we do is 
 
-SELECT * from public.product_reviews where public.product_reviews.product_id IN (SELECT * from public.product_reviews WHERE public.product_reviews.uid = 'uid')
+SELECT * from public.product_reviews where public.product_reviews.product_id IN (SELECT public.product_reviews.product_id from public.product_reviews WHERE public.product_reviews.uid = ?)
 
-And that will give us a list of reviews.
 
-From there, 
+
+
+
+And that will give us a list of *ALL* reviews for products we have reviews, including our own. I'm not 100% certain about how we recieve that data as code.
+
+Now remember, we want to count 
+
+From there, we want to iterate over 
