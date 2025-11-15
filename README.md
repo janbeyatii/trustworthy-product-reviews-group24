@@ -18,6 +18,10 @@ This is a **simplified foundation** with basic user authentication and a clean l
   - View other users' profiles and follow/unfollow them
 - **Social Features**: Follow/unfollow users to build your trust network
 - **Responsive Design**: Modern, mobile-friendly UI
+- **Circuit Breaker Protection**: Hystrix circuit breakers for database operations and external API calls
+  - Automatic failure detection and fallback handling
+  - Circuit breaker debug dashboard at `/debug.html` for monitoring and testing
+- **Comprehensive Testing**: Unit tests and circuit breaker test scenarios
 
 ### Coming Soon
 
@@ -36,6 +40,8 @@ The following features will be added incrementally:
 - **Authentication**: Supabase Auth
 - **Frontend**: Vanilla JavaScript, HTML5, CSS3
 - **Build Tool**: Maven
+- **Circuit Breaker**: Hystrix (for fault tolerance and resilience)
+- **Testing**: JUnit 5, Mockito
 
 ## Getting Started
 
@@ -70,6 +76,70 @@ SUPABASE_DATABASE_URL=your_database_url
 SUPABASE_DATABASE_USERNAME=your_database_username
 SUPABASE_DATABASE_PASSWORD=your_database_password
 ```
+
+## Testing
+
+The project includes comprehensive unit tests and circuit breaker tests. Here's how to run them:
+
+### Running All Tests
+
+```bash
+mvn test
+```
+
+### Running Specific Test Suites
+
+**Run all Hystrix circuit breaker tests:**
+```bash
+mvn test -Dtest="*Hystrix*Test,*CircuitBreaker*Test"
+```
+
+**Run controller tests:**
+```bash
+mvn test -Dtest="*ControllerTest"
+```
+
+**Run specific test classes:**
+```bash
+# Product controller tests
+mvn test -Dtest=ProductControllerTest
+
+# User controller tests
+mvn test -Dtest=UserControllerTest
+
+# Hystrix user service tests
+mvn test -Dtest=HystrixUserServiceTest
+
+# Hystrix product service tests
+mvn test -Dtest=HystrixProductServiceTest
+
+# Circuit breaker scenario tests
+mvn test -Dtest=CircuitBreakerScenarioTest
+```
+
+**Run a specific test method:**
+```bash
+mvn test -Dtest=HystrixUserServiceTest#testSearchUsers_Success
+```
+
+### Available Test Suites
+
+- **Controller Tests**: `ProductControllerTest`, `UserControllerTest`
+- **Hystrix Circuit Breaker Tests**: 
+  - `HystrixUserServiceTest` - Tests for user service circuit breakers (10 scenarios)
+  - `HystrixProductServiceTest` - Tests for product service circuit breakers (10 scenarios)
+  - `CircuitBreakerScenarioTest` - Advanced scenarios (concurrency, mixed failures, etc.)
+  - `CircuitBreakerIntegrationTest` - Lightweight integration tests
+
+### Test Coverage
+
+The tests cover:
+- Normal operation scenarios
+- Failure handling and fallback behavior
+- Circuit breaker opening/closing
+- Timeout scenarios
+- Concurrent request handling
+- Service isolation
 
 ## Using the Profile Feature
 
