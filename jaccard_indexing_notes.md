@@ -20,4 +20,24 @@ Obviously I don't want to recalculate all of these every single time. They shoul
 
 I think what I'll probably do is store the top 10 User IDs and associated Jaccard scores.
 
-**Update:** Okay that schema doesn't look how I was expecting at all, there actually isn't any table mapping reviews to users. Products are tied to reviews, and reviews have an associated UID. So what I'll want to do is delete that 
+**Update:** Okay that schema doesn't look how I was expecting at all, there actually isn't any table mapping reviews to users. Reviews are their own thing, using products as a foreign key. I think I need to either:
+
+a) work out a different way to compute a Jaccard index
+
+b) create a user-review table that I can use for this
+
+c) Just do a gnaryl SQL union
+
+Remember what our goal is: find users with similar opinions to the current user.
+
+So we start by selecting all the reviews which share a UID with the current user.
+
+Then, we iterate over each of those reviews, which gets us a list of all the *other* UIDs which have reviewed these products.
+
+Or. No. Maybe what we do is 
+
+SELECT * from public.product_reviews where public.product_reviews.product_id IN (SELECT * from public.product_reviews WHERE public.product_reviews.uid = 'uid')
+
+And that will give us a list of reviews.
+
+From there, 
