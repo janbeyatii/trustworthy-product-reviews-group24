@@ -48,6 +48,24 @@ public class UserService {
      */
     public List<Map<String, Object>> searchUsers(String query) {
         try {
+            /**
+             * Circuit Breaker Testing: Failure Simulation
+             * 
+             * If the query starts with "__SIMULATE_FAILURE__", this method throws an exception
+             * to simulate a database failure. This is used by the CircuitBreakerDebugController
+             * to test circuit breaker behavior without requiring actual database failures.
+             * 
+             * The failure marker is added by the debug controller when failure simulation is enabled.
+             * The exception occurs inside the Hystrix command, so it's properly tracked by the
+             * circuit breaker metrics.
+             * 
+             * WARNING: This is for testing only. In production, this check could be removed
+             * or gated behind a feature flag.
+             */
+            if (query != null && query.startsWith("__SIMULATE_FAILURE__")) {
+                throw new RuntimeException("Simulated database failure for circuit breaker testing");
+            }
+            
             // Query auth.users table to find users matching the query
             String sql = """
                 SELECT 
@@ -151,6 +169,9 @@ public class UserService {
         }
     }
 
+    /**
+     * Helper method to query a user by ID from the database.
+     */
     private List<Map<String, Object>> queryUserById(String userId) {
         String sql = """
                 SELECT 
@@ -168,6 +189,9 @@ public class UserService {
         return results;
     }
 
+    /**
+     * Parse the raw_user_meta_data JSON field to extract a "display_name" key.
+     */
     private void enrichUserMetadata(List<Map<String, Object>> users) {
         users.forEach(user -> {
             Object metadata = user.get("raw_user_meta_data");
@@ -201,6 +225,9 @@ public class UserService {
         });
     }
 
+    /**
+     * Fallback method to fetch user information from the Supabase Admin API if the local database lookup fails.
+     */
     private Optional<Map<String, Object>> fetchUserFromSupabaseAdmin(String userId) {
         if (supabaseProperties == null
                 || !StringUtils.hasText(supabaseProperties.getServiceRoleKey())

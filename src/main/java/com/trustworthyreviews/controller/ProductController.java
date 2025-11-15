@@ -1,6 +1,6 @@
 package com.trustworthyreviews.controller;
 
-import com.trustworthyreviews.service.ProductService;
+import com.trustworthyreviews.service.HystrixProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,11 +12,14 @@ import java.util.Map;
 public class ProductController {
 
     @Autowired
-    private ProductService productService;
+    private HystrixProductService hystrixProductService;
 
+    /**
+     * Get all products
+     */
     @GetMapping
     public List<Map<String, Object>> getAllProducts() {
-        return productService.getAllProducts();
+        return hystrixProductService.getAllProducts();
     }
 
     /**
@@ -24,7 +27,7 @@ public class ProductController {
      */
     @GetMapping("/{id}")
     public Map<String, Object> getProductById(@PathVariable("id") int productId) {
-        return productService.getProductById(productId);
+        return hystrixProductService.getProductById(productId);
     }
 
     /**
@@ -32,7 +35,7 @@ public class ProductController {
      */
     @GetMapping("/search")
     public List<Map<String, Object>> searchProducts(@RequestParam("q") String query) {
-        return productService.searchProducts(query);
+        return hystrixProductService.searchProducts(query);
     }
 
 }
