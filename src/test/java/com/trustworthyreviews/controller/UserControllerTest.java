@@ -1,7 +1,7 @@
 package com.trustworthyreviews.controller;
 
 import com.trustworthyreviews.security.SupabaseUser;
-import com.trustworthyreviews.service.UserService;
+import com.trustworthyreviews.service.HystrixUserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 class UserControllerTest {
 
     @Mock
-    private UserService userService;
+    private HystrixUserService hystrixUserService;
 
     @InjectMocks
     private UserController userController;
@@ -72,7 +72,7 @@ class UserControllerTest {
         mockAuth(user);
 
         List<Map<String, Object>> mockUsers = List.of(Map.of("id", "11", "email", "a@mail.com"));
-        when(userService.searchUsers("a@mail.com")).thenReturn(mockUsers);
+        when(hystrixUserService.searchUsers("a@mail.com")).thenReturn(mockUsers);
 
         System.out.println("Query: 'a@mail.com'");
         System.out.println("Mock service will return: " + mockUsers);
@@ -111,7 +111,7 @@ class UserControllerTest {
         mockAuth(user);
 
         Map<String, Object> mockUser = Map.of("id", "999", "email", "target@mail.com", "name", "Target User");
-        when(userService.getUserById("999")).thenReturn(mockUser);
+        when(hystrixUserService.getUserById("999")).thenReturn(mockUser);
 
         System.out.println("Query: getUserProfile('999')");
         System.out.println("Mock service will return: " + mockUser);
@@ -123,7 +123,7 @@ class UserControllerTest {
         assertEquals(mockUser, res.getBody());
 
         // Not found
-        when(userService.getUserById("200")).thenReturn(null);
+        when(hystrixUserService.getUserById("200")).thenReturn(null);
         ResponseEntity<?> notFoundRes = userController.getUserProfile("200");
         System.out.println("Query: getUserProfile('200')");
         System.out.println("Result: " + notFoundRes.getBody());
@@ -148,7 +148,7 @@ class UserControllerTest {
         mockAuth(user);
 
         List<Map<String, Object>> mockData = List.of(Map.of("email", "test1@mail.com"), Map.of("email", "test2@mail.com"));
-        when(userService.getFollowingForUser("500")).thenReturn(mockData);
+        when(hystrixUserService.getFollowingForUser("500")).thenReturn(mockData);
 
         System.out.println("Mock service will return: " + mockData);
 
@@ -175,7 +175,7 @@ class UserControllerTest {
         mockAuth(user);
 
         List<Map<String, Object>> mockData = List.of(Map.of("email", "test1@mail.com"), Map.of("email", "test2@mail.com"));
-        when(userService.getFollowersForUser("600")).thenReturn(mockData);
+        when(hystrixUserService.getFollowersForUser("600")).thenReturn(mockData);
 
         System.out.println("Mock service will return: " + mockData);
 
