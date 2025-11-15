@@ -16,4 +16,8 @@ I think I can?
 
 ## How should I be storing these results?
 
-Obviously I don't want to recalculate all of these every single time. They should be stored. 
+Obviously I don't want to recalculate all of these every single time. They should be stored. But how?
+
+I think what I'll probably do is store the top 10 User IDs and associated Jaccard scores.
+
+**Update:** Okay that schema doesn't look how I was expecting at all, there actually isn't any table mapping reviews to users. Products are tied to reviews, and reviews have an associated UID. So what I'll want to do is delete that 
