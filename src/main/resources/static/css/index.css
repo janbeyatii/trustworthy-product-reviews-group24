@@ -1028,3 +1028,339 @@ p {
         margin-top: 15px;
     }
 }
+
+.product-header {
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem 0;
+    margin-bottom: 2rem;
+}
+
+.product-header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.product-header h1 {
+    font-size: 1.75rem;
+    color: var(--text);
+}
+
+.back-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.2s ease;
+}
+
+.back-link:hover {
+    color: var(--accent-strong);
+}
+
+.reviews-section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 1.25rem;
+    padding: 2.5rem;
+    margin-top: 3rem;
+    box-shadow: var(--shadow);
+}
+
+.reviews-section h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: var(--text);
+}
+
+.reviews-section h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1.25rem;
+    color: var(--text);
+}
+
+/* Review Summary */
+.review-summary {
+    margin-bottom: 3rem;
+}
+
+.review-summary-content {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 3rem;
+    align-items: center;
+}
+
+.overall-rating {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    background: rgba(56, 189, 248, 0.05);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: 1rem;
+    min-width: 200px;
+}
+
+.rating-number {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+}
+
+.rating-stars {
+    font-size: 1.5rem;
+    color: #fbbf24;
+    letter-spacing: 0.1rem;
+}
+
+.rating-count {
+    font-size: 0.95rem;
+    color: var(--muted);
+}
+
+.rating-distribution {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.rating-bar {
+    display: grid;
+    grid-template-columns: 60px 1fr 60px;
+    align-items: center;
+    gap: 1rem;
+}
+
+.star-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+    text-align: right;
+}
+
+.bar-container {
+    height: 0.75rem;
+    background: rgba(148, 163, 184, 0.15);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+    border-radius: 999px;
+    transition: width 0.3s ease;
+}
+
+.percentage-label {
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-align: left;
+}
+
+.no-reviews {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--muted);
+    font-size: 1rem;
+}
+
+.write-review-section {
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 1rem;
+    padding: 2rem;
+    margin-bottom: 3rem;
+}
+
+.review-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.rating-input {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.rating-input label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.star-rating-input {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    gap: 0.25rem;
+}
+
+.star-rating-input input[type="radio"] {
+    display: none;
+}
+
+.star-rating-input label {
+    font-size: 2.5rem;
+    color: rgba(148, 163, 184, 0.3);
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.star-rating-input label:hover,
+.star-rating-input label:hover ~ label {
+    color: #fbbf24;
+    transform: scale(1.1);
+}
+
+.star-rating-input input[type="radio"]:checked ~ label {
+    color: #fbbf24;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.form-group textarea {
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 0.75rem;
+    padding: 0.85rem 1rem;
+    color: var(--text);
+    font-size: 1rem;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 120px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group textarea:focus {
+    border-color: var(--accent);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
+}
+
+.review-status {
+    min-height: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-top: -0.5rem;
+}
+
+.review-status--error {
+    color: #fda4af;
+}
+
+.review-status--success {
+    color: #86efac;
+}
+
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.review-item {
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: border-color 0.2s ease;
+}
+
+.review-item:hover {
+    border-color: rgba(148, 163, 184, 0.4);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.reviewer-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.reviewer-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.review-date {
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.review-rating {
+    font-size: 1.25rem;
+    color: #fbbf24;
+    letter-spacing: 0.1rem;
+}
+
+.review-text {
+    line-height: 1.6;
+    color: var(--text);
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.error {
+    color: #fda4af;
+    text-align: center;
+    padding: 2rem;
+}
+
+@media (max-width: 768px) {
+    .review-summary-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .overall-rating {
+        width: 100%;
+        padding: 1.5rem;
+    }
+
+    .rating-bar {
+        grid-template-columns: 50px 1fr 50px;
+        gap: 0.75rem;
+    }
+
+    .reviews-section {
+        padding: 1.5rem;
+    }
+
+    .write-review-section {
+        padding: 1.5rem;
+    }
+
+    .star-rating-input label {
+        font-size: 2rem;
+    }
+
+    .product-header .container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
