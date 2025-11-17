@@ -76,12 +76,15 @@ public class UserService {
                 FROM auth.users
                 WHERE 
                     email ILIKE ?
+                    OR
+                    raw_user_meta_data::text ILIKE CONCAT('%display_name": "', ?)
                 ORDER BY email
                 LIMIT 20
             """;
             
-            String pattern = "%" + query + "%";
-            List<Map<String, Object>> users = jdbcTemplate.queryForList(sql, pattern);
+            String email_pattern = "%" + query + "%";
+            String display_name_pattern = query + "%";
+            List<Map<String, Object>> users = jdbcTemplate.queryForList(sql, email_pattern, display_name_pattern);
             
             enrichUserMetadata(users);
             
