@@ -155,43 +155,8 @@ Once logged in, you can:
 
 ## Data Base Schema 
 
-The database tables used in the project
+<img width="803" height="771" alt="Screenshot 2025-11-17 132024" src="https://github.com/user-attachments/assets/69bb4a9f-866f-4c33-ad56-b4ae6c867a4c" />
 
-```bash
-#1. Products Table
-CREATE TABLE public.products (
-  product_id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-  name text NOT NULL,
-  avg_rating double precision,
-  description text,
-  image text,
-  category text,
-  link text,
-  CONSTRAINT products_pkey PRIMARY KEY (product_id)
-);
+## UML diagram
 
-#2. Followers/Following Table 
-CREATE TABLE public.relations (
-  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-  uid uuid NOT NULL,
-  following uuid NOT NULL,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT relations_pkey PRIMARY KEY (id),
-  CONSTRAINT relations_uid_fkey FOREIGN KEY (uid) REFERENCES auth.users(id) ON DELETE CASCADE,
-  CONSTRAINT relations_following_fkey FOREIGN KEY (following) REFERENCES auth.users(id) ON DELETE CASCADE
-);
-
-#3. Product Reviews Table
-CREATE TABLE public.product_reviews (
-  review_id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-  product_id bigint NOT NULL,
-  review_rating smallint NOT NULL CHECK (review_rating >= 1 AND review_rating <= 5),
-  review_desc text,
-  uid uuid NOT NULL,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT product_reviews_pkey PRIMARY KEY (review_id),
-  CONSTRAINT product_reviews_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(product_id) ON DELETE CASCADE,
-  CONSTRAINT product_reviews_uid_fkey FOREIGN KEY (uid) REFERENCES auth.users(id) ON DELETE CASCADE,
-  CONSTRAINT unique_user_product_review UNIQUE (product_id, uid)
-);
-```
+<img width="3200" height="6080" alt="ProjectUml" src="https://github.com/user-attachments/assets/ecd6361d-82ea-4abc-b3bd-c371e77f9d2c" />
