@@ -12,6 +12,7 @@ This is a **simplified foundation** with basic user authentication and a clean l
 - **User Authentication**: Complete user CRUD operations using Supabase
 - **Login/Signup Flow**: Users can create accounts and log in
 - **Basic Dashboard**: Simple homepage after login with user profile management
+- **Product Reviews**: Users can submit and view reviews with 1-5 star ratings on each product page
 - **User Profile System**: 
   - View who you follow and who follows you
   - Search for users by email
@@ -27,7 +28,6 @@ This is a **simplified foundation** with basic user authentication and a clean l
 
 The following features will be added incrementally:
 
-- Write and manage product reviews
 - Browse products by category and rating
 - Discover similar users using Jaccard distance
 - View trust network analytics
@@ -172,23 +172,26 @@ CREATE TABLE public.products (
 
 #2. Followers/Following Table 
 CREATE TABLE public.relations (
-  id bigint NOT NULL DEFAULT nextval('relations_id_seq'::regclass),
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   uid uuid NOT NULL,
   following uuid NOT NULL,
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT relations_pkey PRIMARY KEY (id),
-  CONSTRAINT relations_uid_fkey FOREIGN KEY (uid) REFERENCES auth.users(id),
-  CONSTRAINT relations_following_fkey FOREIGN KEY (following) REFERENCES auth.users(id)
+  CONSTRAINT relations_uid_fkey FOREIGN KEY (uid) REFERENCES auth.users(id) ON DELETE CASCADE,
+  CONSTRAINT relations_following_fkey FOREIGN KEY (following) REFERENCES auth.users(id) ON DELETE CASCADE
 );
 
-#3. Reviews Table
-CREATE TABLE public.reviews (
-  product_id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-  review_rating smallint NOT NULL,
+#3. Product Reviews Table
+CREATE TABLE public.product_reviews (
+  review_id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  product_id bigint NOT NULL,
+  review_rating smallint NOT NULL CHECK (review_rating >= 1 AND review_rating <= 5),
   review_desc text,
-  UID uuid,
-  CONSTRAINT reviews_pkey PRIMARY KEY (product_id),
-  CONSTRAINT reviews_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(product_id),
-  CONSTRAINT reviews_UID_fkey FOREIGN KEY (UID) REFERENCES auth.users(id)
+  uid uuid NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT product_reviews_pkey PRIMARY KEY (review_id),
+  CONSTRAINT product_reviews_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(product_id) ON DELETE CASCADE,
+  CONSTRAINT product_reviews_uid_fkey FOREIGN KEY (uid) REFERENCES auth.users(id) ON DELETE CASCADE,
+  CONSTRAINT unique_user_product_review UNIQUE (product_id, uid)
 );
 ```
