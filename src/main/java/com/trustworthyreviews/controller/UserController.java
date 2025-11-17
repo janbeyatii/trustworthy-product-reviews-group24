@@ -2,6 +2,7 @@ package com.trustworthyreviews.controller;
 
 import com.trustworthyreviews.security.SupabaseUser;
 import com.trustworthyreviews.service.HystrixUserService;
+import com.trustworthyreviews.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -17,6 +18,8 @@ public class UserController {
     @Autowired
     private HystrixUserService hystrixUserService;
 
+    @Autowired
+    private UserService userService;
     /**
      * Returns information about the currently authenticated user.
      */
@@ -116,6 +119,29 @@ public class UserController {
             return ResponseEntity.ok(hystrixUserService.getFollowersForUser(user.getId()));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("message", "Error fetching followers: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Get the list of the ten closest users by Jaccard distance
+     */
+    @GetMapping("/users/me/recommended")
+    public ResponseEntity<?> getRecommendedUsers() {
+
+        //TODO: Add a check for if Jaccard distance has already been calculated recently
+
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !(authentication.getPrincipal() instanceof SupabaseUser user)) {
+            return ResponseEntity.status(401).body(Map.of("message", "Not authenticated"));
+        }
+
+        try {
+            //return ResponseEntity.ok("Hello, World!");
+            return ResponseEntity.ok(userService.getRecommendedUsers(user.getId()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("message", "Error fetching recommend users: " + e.getMessage()));
         }
     }
 }

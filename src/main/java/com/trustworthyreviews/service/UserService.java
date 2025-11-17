@@ -184,8 +184,6 @@ public class UserService {
                     public.product_reviews.uid = ?)
             """;
             List<Map<String, Object>> users = jdbcTemplate.queryForList(sql, userId);
-            System.out.println("PRINTING USERS");
-            System.out.println(users);
             return users;
         } catch (Exception e) {
             log.error("Error fetch recommended users for user {}: {}", userId, e.getMessage(), e);
