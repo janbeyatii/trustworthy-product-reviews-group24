@@ -16,14 +16,17 @@ export async function initializeProfileSection() {
     // Tab switching
     const followingTab = document.getElementById('following-tab');
     const followersTab = document.getElementById('followers-tab');
+    const similarUsersTab = document.getElementById('similar-users-tab');
     const searchUsersTab = document.getElementById('search-users-tab');
     
     const followingList = document.getElementById('following-list');
     const followersList = document.getElementById('followers-list');
+    const similarUsersList = document.getElementById('similar-users-list');
     const searchUsersSection = document.getElementById('search-users-section');
 
     followingTab?.addEventListener('click', () => switchTab('following', followingTab));
     followersTab?.addEventListener('click', () => switchTab('followers', followersTab));
+    similarUsersTab?.addEventListener('click', () => switchTab('similar', similarUsersTab));
     searchUsersTab?.addEventListener('click', () => switchTab('search', searchUsersTab));
 
     // Load initial data
@@ -70,20 +73,23 @@ function switchTab(tabName, activeTab) {
     // Show/hide sections
     const followingList = document.getElementById('following-list');
     const followersList = document.getElementById('followers-list');
+    const similarUsersList = document.getElementById('similar-users-list');
     const searchUsersSection = document.getElementById('search-users-section');
 
     followingList?.classList.add('hidden');
     followersList?.classList.add('hidden');
+    similarUsersList?.classList.add('hidden');
     searchUsersSection?.classList.add('hidden');
 
     if (tabName === 'following') {
         followingList?.classList.remove('hidden');
-        searchUsersSection?.classList.add('hidden');
         loadFollowing();
     } else if (tabName === 'followers') {
         followersList?.classList.remove('hidden');
-        searchUsersSection?.classList.add('hidden');
         loadFollowers();
+    } else if (tabName === 'similar') {
+        similarUsersList?.classList.remove('hidden');
+        loadSimilarUsers();
     } else if (tabName === 'search') {
         searchUsersSection?.classList.remove('hidden');
     }
@@ -430,4 +436,103 @@ async function fetchUserDetails(userId) {
         console.error('Error fetching user details:', error);
     }
     return null;
+}
+
+async function loadSimilarUsers() {
+    const similarUsersList = document.getElementById('similar-users-list');
+    if (!similarUsersList || !currentUserId) return;
+
+    try {
+        similarUsersList.innerHTML = '<div class="empty-state">Finding similar users...</div>';
+        
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) {
+            throw new Error('Not authenticated');
+        }
+
+        const response = await fetch(`/api/users/me/similar?limit=10&minSimilarity=0.1`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`
+            }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `Failed to load similar users (status ${response.status})`);
+        }
+
+        const users = await response.json();
+        
+        similarUsersList.innerHTML = '';
+        
+        if (!users || users.length === 0) {
+            similarUsersList.innerHTML = `
+                <div class="empty-state">
+                    <p>No similar users found yet.</p>
+                    <p style="font-size: 0.9rem; margin-top: 0.5rem; color: var(--muted);">
+                        Review products and follow users to discover people with similar interests!
+                    </p>
+                </div>
+            `;
+            return;
+        }
+
+        for (const user of users) {
+            const userItem = createSimilarUserItem(user);
+            similarUsersList.appendChild(userItem);
+        }
+    } catch (error) {
+        console.error('Error loading similar users:', error);
+        similarUsersList.innerHTML = `<div class="empty-state">Error: ${error.message || 'Failed to load similar users'}</div>`;
+    }
+}
+
+function createSimilarUserItem(user) {
+    const item = document.createElement('div');
+    item.className = 'profile-item similar-user-item';
+    
+    const email = user.email || 'Email unavailable';
+    const displayName = user.display_name;
+    const similarity = (user.similarity * 100).toFixed(1);
+    const productSim = (user.product_similarity * 100).toFixed(0);
+    const followingSim = (user.following_similarity * 100).toFixed(0);
+    
+    const getColorForScore = (score) => {
+        if (score >= 0.5) return '#10b981';
+        if (score >= 0.3) return '#3b82f6';
+        return '#6366f1';
+    };
+    
+    const barColor = getColorForScore(user.similarity);
+
+    item.innerHTML = `
+        <div class="profile-item-info" data-user-id="${user.id}">
+            <div class="profile-item-name">${escapeHtml(email)}</div>
+            ${displayName ? `<div class="profile-item-email">${escapeHtml(displayName)}</div>` : ''}
+            <div class="similarity-score" style="margin-top: 0.5rem;">
+                <div class="similarity-bar-container" style="background: rgba(148, 163, 184, 0.2); height: 6px; border-radius: 3px; overflow: hidden;">
+                    <div class="similarity-bar-fill" style="width: ${similarity}%; height: 100%; background: ${barColor}; transition: width 0.3s ease;"></div>
+                </div>
+                <div class="similarity-details" style="display: flex; gap: 1rem; margin-top: 0.5rem; font-size: 0.8rem; color: var(--muted);">
+                    <span title="Overall similarity">${similarity}% match</span>
+                    <span title="Similar products reviewed">📦 ${productSim}%</span>
+                    <span title="Similar users followed">👥 ${followingSim}%</span>
+                </div>
+            </div>
+        </div>
+        <button class="button profile-action-btn">View</button>
+    `;
+
+    const infoDiv = item.querySelector('.profile-item-info');
+    const viewButton = item.querySelector('button');
+
+    const viewProfile = async () => {
+        await showUserProfile(user.id, email);
+    };
+
+    infoDiv.addEventListener('click', viewProfile);
+    viewButton.addEventListener('click', viewProfile);
+
+    return item;
 }
