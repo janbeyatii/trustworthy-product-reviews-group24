@@ -248,24 +248,55 @@ public class UserService {
         }
     }
 
-    public double calculateFollowingJaccardSimilarity(String userId1, String userId2) {
+    public double calculateRatingJaccardSimilarity(String userId1, String userId2) {
         try {
-            String sql = "SELECT DISTINCT following FROM relations WHERE uid = ?::uuid";
-            List<Map<String, Object>> user1Following = jdbcTemplate.queryForList(sql, userId1);
+            String sql = "SELECT product_id, review_rating FROM product_reviews WHERE uid = ?::uuid AND review_rating IS NOT NULL ORDER BY created_at DESC";
+            List<Map<String, Object>> user1Reviews = jdbcTemplate.queryForList(sql, userId1);
             
-            List<Map<String, Object>> user2Following = jdbcTemplate.queryForList(sql, userId2);
+            List<Map<String, Object>> user2Reviews = jdbcTemplate.queryForList(sql, userId2);
             
-            java.util.Set<Object> set1 = user1Following.stream()
-                    .map(row -> row.get("following"))
-                    .collect(java.util.stream.Collectors.toSet());
+            Map<Object, Number> user1Ratings = user1Reviews.stream()
+                    .filter(row -> row.get("review_rating") != null)
+                    .collect(java.util.stream.Collectors.toMap(
+                            row -> row.get("product_id"),
+                            row -> (Number) row.get("review_rating"),
+                            (existing, replacement) -> existing
+                    ));
             
-            java.util.Set<Object> set2 = user2Following.stream()
-                    .map(row -> row.get("following"))
-                    .collect(java.util.stream.Collectors.toSet());
+            Map<Object, Number> user2Ratings = user2Reviews.stream()
+                    .filter(row -> row.get("review_rating") != null)
+                    .collect(java.util.stream.Collectors.toMap(
+                            row -> row.get("product_id"),
+                            row -> (Number) row.get("review_rating"),
+                            (existing, replacement) -> existing
+                    ));
             
-            return calculateJaccardIndex(set1, set2);
+            java.util.Set<Object> commonProducts = new java.util.HashSet<>(user1Ratings.keySet());
+            commonProducts.retainAll(user2Ratings.keySet());
+            
+            if (commonProducts.isEmpty()) {
+                log.debug("No common products with ratings for users {} and {}", userId1, userId2);
+                return 0.0;
+            }
+            
+            long similarRatings = commonProducts.stream()
+                    .filter(productId -> {
+                        double rating1 = user1Ratings.get(productId).doubleValue();
+                        double rating2 = user2Ratings.get(productId).doubleValue();
+                        double diff = Math.abs(rating1 - rating2);
+                        log.debug("Product {}: User1 rating={}, User2 rating={}, diff={}, similar={}", 
+                                productId, rating1, rating2, diff, diff <= 1.0);
+                        return diff <= 1.0;
+                    })
+                    .count();
+            
+            double similarity = (double) similarRatings / commonProducts.size();
+            log.debug("Rating similarity for users {} and {}: {}/{} common products = {}", 
+                    userId1, userId2, similarRatings, commonProducts.size(), similarity);
+            
+            return similarity;
         } catch (Exception e) {
-            log.error("Error calculating following Jaccard similarity between users {} and {}: {}", 
+            log.error("Error calculating rating Jaccard similarity between users {} and {}: {}", 
                     userId1, userId2, e.getMessage(), e);
             return 0.0;
         }
@@ -273,9 +304,9 @@ public class UserService {
 
     public double calculateCombinedJaccardSimilarity(String userId1, String userId2) {
         double productSimilarity = calculateProductJaccardSimilarity(userId1, userId2);
-        double followingSimilarity = calculateFollowingJaccardSimilarity(userId1, userId2);
+        double ratingSimilarity = calculateRatingJaccardSimilarity(userId1, userId2);
         
-        return (productSimilarity + followingSimilarity) / 2.0;
+        return (productSimilarity + ratingSimilarity) / 2.0;
     }
 
     public List<Map<String, Object>> findSimilarUsers(String userId, int limit, double minSimilarity) {
@@ -297,7 +328,7 @@ public class UserService {
                     result.put("display_name", user.get("display_name"));
                     result.put("similarity", Math.round(similarity * 1000.0) / 1000.0); // Round to 3 decimals
                     result.put("product_similarity", Math.round(calculateProductJaccardSimilarity(userId, otherUserId) * 1000.0) / 1000.0);
-                    result.put("following_similarity", Math.round(calculateFollowingJaccardSimilarity(userId, otherUserId) * 1000.0) / 1000.0);
+                    result.put("rating_similarity", Math.round(calculateRatingJaccardSimilarity(userId, otherUserId) * 1000.0) / 1000.0);
                     similarUsers.add(result);
                 }
             }
