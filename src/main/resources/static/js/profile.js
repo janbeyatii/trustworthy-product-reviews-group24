@@ -515,14 +515,11 @@ function createSimilarUserItem(user) {
                     <div class="similarity-bar-fill" style="width: ${similarity}%; height: 100%; background: ${barColor}; transition: width 0.3s ease;"></div>
                 </div>
                 <div class="similarity-details" style="display: flex; gap: 1rem; margin-top: 0.5rem; font-size: 0.8rem; color: var(--muted);">
-                    <span title="Overall similarity">${similarity}% match</span>
-                    <span title="Similar products reviewed">📦 ${productSim}%</span>
-                    <span title="Similar users followed">👥 ${followingSim}%</span>
+                    <span title="Overall similarity">${similarity}% overall match (${productSim}% product match, ${followingSim}% follower match)</span>
                 </div>
             </div>
         </div>
         <button class="button profile-action-btn">View</button>
-    `;
 
     const infoDiv = item.querySelector('.profile-item-info');
     const viewButton = item.querySelector('button');
