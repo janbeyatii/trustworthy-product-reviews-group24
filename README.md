@@ -18,6 +18,10 @@ This is a **simplified foundation** with basic user authentication and a clean l
   - Search for users by email
   - View other users' profiles and follow/unfollow them
 - **Social Features**: Follow/unfollow users to build your trust network
+- **Jaccard Index Similarity**: Discover users with similar tastes
+  - Calculates similarity based on products reviewed and users followed
+  - Visual similarity scores with detailed breakdowns
+  - "Similar Users" tab in the profile section
 - **Responsive Design**: Modern, mobile-friendly UI
 - **Circuit Breaker Protection**: Hystrix circuit breakers for database operations and external API calls
   - Automatic failure detection and fallback handling
@@ -29,9 +33,9 @@ This is a **simplified foundation** with basic user authentication and a clean l
 The following features will be added incrementally:
 
 - Browse products by category and rating
-- Discover similar users using Jaccard distance
 - View trust network analytics
 - See community leaders and most followed users
+- Personalized product recommendations based on similar users
 
 ## Tech Stack
 
@@ -147,11 +151,59 @@ Once logged in, you can:
 
 1. **View Who You Follow**: Click the "Following" tab in the Profile section
 2. **View Who Follows You**: Click the "Followers" tab
-3. **Search for Users**: 
+3. **Discover Similar Users**: Click the "Similar Users" tab
+   - See users with similar product tastes and following patterns
+   - Similarity is calculated using the Jaccard Index algorithm
+   - View detailed similarity breakdowns (products & following)
+   - Higher percentages indicate more similar interests
+4. **Search for Users**: 
    - Click the "Search" tab
    - Start typing an email
    - Matching users will appear
-4. **View User Profiles**: Click on any user to see their profile and follow/unfollow them
+5. **View User Profiles**: Click on any user to see their profile and follow/unfollow them
+
+## How Jaccard Index Similarity Works
+
+The platform uses the **Jaccard Index** algorithm to find users with similar interests:
+
+### Formula
+```
+J(A, B) = |A ∩ B| / |A ∪ B|
+```
+
+Where:
+- `A` and `B` are sets of items (products reviewed or users followed)
+- `|A ∩ B|` is the number of items in common
+- `|A ∪ B|` is the total number of unique items across both sets
+
+### Example
+- **User A** reviewed products: [1, 2, 3, 4, 5]
+- **User B** reviewed products: [3, 4, 5, 6, 7]
+- **Common products** (intersection): [3, 4, 5] → 3 items
+- **Total unique products** (union): [1, 2, 3, 4, 5, 6, 7] → 7 items
+- **Jaccard Index**: 3 / 7 = **0.429** (42.9% similarity)
+
+### Similarity Calculation
+The platform calculates **two types of similarity**:
+1. **Product Similarity**: Based on products you've both reviewed
+2. **Following Similarity**: Based on users you both follow
+
+The **overall similarity** is the average of both scores, giving you a comprehensive measure of how similar your interests are.
+
+### API Endpoints
+
+**Find Similar Users:**
+```
+GET /api/users/me/similar?limit=10&minSimilarity=0.1
+```
+- `limit`: Maximum number of users to return (1-50, default: 10)
+- `minSimilarity`: Minimum similarity threshold (0.0-1.0, default: 0.1)
+
+**Calculate Similarity Between Users:**
+```
+GET /api/users/similarity/{userId}
+```
+Returns the Jaccard similarity score between you and another user.
 
 ## Data Base Schema 
 

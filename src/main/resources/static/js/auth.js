@@ -192,6 +192,12 @@ async function initialiseAppGuards() {
     if (!data?.session) {
         window.location.replace('index.html');
     }
+    return data?.session;
+}
+
+export async function logout() {
+    await supabaseClient.auth.signOut();
+    window.location.replace('index.html');
 }
 
 if (page === 'auth' || page === 'landing') {

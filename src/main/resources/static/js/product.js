@@ -117,8 +117,11 @@ const fetchAndDisplayReviews = async (productId) => {
     if (!reviewsList) return;
 
     try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        const headers = session ? { 'Authorization': `Bearer ${session.access_token}` } : {};
+
         const baseUrl = window.__API_BASE_URL__ ?? window.location.origin;
-        const res = await fetch(`${baseUrl}/api/products/${productId}/reviews`);
+        const res = await fetch(`${baseUrl}/api/products/${productId}/reviews`, { headers });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const reviews = await res.json();
 
@@ -132,11 +135,20 @@ const fetchAndDisplayReviews = async (productId) => {
             const reviewDate = review.created_at ? new Date(review.created_at).toLocaleDateString() : '';
             const reviewText = review.review_desc || '';
             
+            let degreeBadge = '';
+            if (review.degree_of_separation !== undefined && review.degree_of_separation !== null) {
+                const degree = review.degree_of_separation;
+                const badgeClass = degree === 1 ? 'degree-badge-direct' : 'degree-badge-indirect';
+                const badgeText = degree === 1 ? 'Direct Connection' : `${degree} Degrees Away`;
+                degreeBadge = `<span class="degree-badge ${badgeClass}" title="Degree of Separation">🔗 ${badgeText}</span>`;
+            }
+            
             return `
                 <div class="review-item">
                     <div class="review-header">
                         <div class="reviewer-info">
-                            <span class="reviewer-name">${escapeHtml(displayName)}</span>
+                            <a href="/user.html?id=${review.uid}" class="reviewer-name" style="text-decoration: none;">${escapeHtml(displayName)}</a>
+                            ${degreeBadge}
                             <span class="review-date">${reviewDate}</span>
                         </div>
                         <div class="review-rating">${renderStars(review.review_rating)}</div>

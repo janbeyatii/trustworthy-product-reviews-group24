@@ -19,6 +19,9 @@ public class ReviewService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private UserService userService;
+
     @Transactional
     public Map<String, Object> addReview(int productId, String userId, int rating, String reviewText) {
         if (rating < 1 || rating > 5) {
@@ -67,6 +70,10 @@ public class ReviewService {
     }
 
     public List<Map<String, Object>> getReviewsForProduct(int productId) {
+        return getReviewsForProduct(productId, null);
+    }
+
+    public List<Map<String, Object>> getReviewsForProduct(int productId, String currentUserId) {
         try {
             String sql = """
                 SELECT 
@@ -75,18 +82,40 @@ public class ReviewService {
                     r.review_rating,
                     r.review_desc,
                     r.uid::text as uid,
-                    r.created_at,
-                    u.email,
-                    u.raw_user_meta_data
+                    r.created_at
                 FROM product_reviews r
-                LEFT JOIN auth.users u ON r.uid = u.id
                 WHERE r.product_id = ?
                 ORDER BY r.created_at DESC
             """;
             
             List<Map<String, Object>> reviews = jdbcTemplate.queryForList(sql, productId);
             
-            enrichReviewMetadata(reviews);
+            // Enrich with user data manually
+            for (Map<String, Object> review : reviews) {
+                String uid = (String) review.get("uid");
+                if (uid != null) {
+                    try {
+                        Map<String, Object> user = userService.getUserById(uid);
+                        if (user != null) {
+                            review.put("email", user.get("email"));
+                            review.put("display_name", user.get("display_name"));
+                        }
+                    } catch (Exception e) {
+                        // ignore user fetch errors
+                    }
+                }
+            }
+            
+            // Calculate degree of separation if current user is provided
+            if (currentUserId != null) {
+                for (Map<String, Object> review : reviews) {
+                    String reviewerId = (String) review.get("uid");
+                    if (reviewerId != null && !reviewerId.equals(currentUserId)) {
+                        Integer degree = userService.getDegreeOfSeparation(currentUserId, reviewerId);
+                        review.put("degree_of_separation", degree);
+                    }
+                }
+            }
             
             return reviews;
         } catch (Exception e) {

@@ -42,49 +42,16 @@ public class UserService {
                 .build();
     }
 
-    /**
-     * Search users by display name or email
-     * This queries Supabase auth.users table through the raw database connection
-     */
     public List<Map<String, Object>> searchUsers(String query) {
         try {
-            /**
-             * Circuit Breaker Testing: Failure Simulation
-             * 
-             * If the query starts with "__SIMULATE_FAILURE__", this method throws an exception
-             * to simulate a database failure. This is used by the CircuitBreakerDebugController
-             * to test circuit breaker behavior without requiring actual database failures.
-             * 
-             * The failure marker is added by the debug controller when failure simulation is enabled.
-             * The exception occurs inside the Hystrix command, so it's properly tracked by the
-             * circuit breaker metrics.
-             * 
-             * WARNING: This is for testing only. In production, this check could be removed
-             * or gated behind a feature flag.
-             */
             if (query != null && query.startsWith("__SIMULATE_FAILURE__")) {
                 throw new RuntimeException("Simulated database failure for circuit breaker testing");
             }
             
-            // Query auth.users table to find users matching the query
-            String sql = """
-                SELECT 
-                    id,
-                    email,
-                    raw_user_meta_data,
-                    created_at
-                FROM auth.users
-                WHERE 
-                    email ILIKE ?
-                    OR
-                    raw_user_meta_data::text ILIKE CONCAT('%display_name": "', ?)
-                ORDER BY email
-                LIMIT 20
-            """;
+            String sql = "SELECT * FROM public.search_users_secure(?)";
             
-            String email_pattern = "%" + query + "%";
-            String display_name_pattern = query + "%";
-            List<Map<String, Object>> users = jdbcTemplate.queryForList(sql, email_pattern, display_name_pattern);
+            String searchPattern = "%" + query + "%";
+            List<Map<String, Object>> users = jdbcTemplate.queryForList(sql, searchPattern);
             
             enrichUserMetadata(users);
             
@@ -94,9 +61,6 @@ public class UserService {
         }
     }
 
-    /**
-     * Get user by UUID
-     */
     public Map<String, Object> getUserById(String userId) {
         try {
             log.info("Fetching user by ID: {}", userId);
@@ -122,9 +86,6 @@ public class UserService {
         }
     }
 
-    /**
-     * Get the users that the provided user is following, including email metadata.
-     */
     public List<Map<String, Object>> getFollowingForUser(String userId) {
         try {
             String sql = """
@@ -132,9 +93,9 @@ public class UserService {
                     u.id,
                     u.email,
                     u.raw_user_meta_data
-                FROM public.relations r
-                JOIN auth.users u ON u.id = r.following
-                WHERE r.uid = ?
+                FROM public.relations r,
+                LATERAL public.get_user_details(r.following) u
+                WHERE r.uid = ?::uuid
                 ORDER BY u.email
             """;
 
@@ -147,9 +108,6 @@ public class UserService {
         }
     }
 
-    /**
-     * Get the followers for the provided user, including email metadata.
-     */
     public List<Map<String, Object>> getFollowersForUser(String userId) {
         try {
             String sql = """
@@ -157,9 +115,9 @@ public class UserService {
                     u.id,
                     u.email,
                     u.raw_user_meta_data
-                FROM public.relations r
-                JOIN auth.users u ON u.id = r.uid
-                WHERE r.following = ?
+                FROM public.relations r,
+                LATERAL public.get_user_details(r.uid) u
+                WHERE r.following = ?::uuid
                 ORDER BY u.email
             """;
 
@@ -172,19 +130,8 @@ public class UserService {
         }
     }
 
-    /**
-     * Helper method to query a user by ID from the database.
-     */
     private List<Map<String, Object>> queryUserById(String userId) {
-        String sql = """
-                SELECT 
-                    id,
-                    email,
-                    created_at,
-                    raw_user_meta_data
-                FROM auth.users
-                WHERE id = ?
-            """;
+        String sql = "SELECT * FROM public.get_user_details(?::uuid)";
 
         List<Map<String, Object>> results = jdbcTemplate.queryForList(sql, userId);
         enrichUserMetadata(results);
@@ -192,9 +139,6 @@ public class UserService {
         return results;
     }
 
-    /**
-     * Parse the raw_user_meta_data JSON field to extract a "display_name" key.
-     */
     private void enrichUserMetadata(List<Map<String, Object>> users) {
         users.forEach(user -> {
             Object metadata = user.get("raw_user_meta_data");
@@ -228,9 +172,6 @@ public class UserService {
         });
     }
 
-    /**
-     * Fallback method to fetch user information from the Supabase Admin API if the local database lookup fails.
-     */
     private Optional<Map<String, Object>> fetchUserFromSupabaseAdmin(String userId) {
         if (supabaseProperties == null
                 || !StringUtils.hasText(supabaseProperties.getServiceRoleKey())
@@ -282,6 +223,198 @@ public class UserService {
             log.error("Failed to fetch user {} via Supabase admin API: {}", userId, ex.getMessage(), ex);
             return Optional.empty();
         }
+    }
+
+    public double calculateProductJaccardSimilarity(String userId1, String userId2) {
+        try {
+            String sql1 = "SELECT DISTINCT product_id FROM product_reviews WHERE uid = ?::uuid";
+            List<Map<String, Object>> user1Products = jdbcTemplate.queryForList(sql1, userId1);
+            
+            List<Map<String, Object>> user2Products = jdbcTemplate.queryForList(sql1, userId2);
+            
+            java.util.Set<Object> set1 = user1Products.stream()
+                    .map(row -> row.get("product_id"))
+                    .collect(java.util.stream.Collectors.toSet());
+            
+            java.util.Set<Object> set2 = user2Products.stream()
+                    .map(row -> row.get("product_id"))
+                    .collect(java.util.stream.Collectors.toSet());
+            
+            return calculateJaccardIndex(set1, set2);
+        } catch (Exception e) {
+            log.error("Error calculating product Jaccard similarity between users {} and {}: {}", 
+                    userId1, userId2, e.getMessage(), e);
+            return 0.0;
+        }
+    }
+
+    public double calculateFollowingJaccardSimilarity(String userId1, String userId2) {
+        try {
+            String sql = "SELECT DISTINCT following FROM relations WHERE uid = ?::uuid";
+            List<Map<String, Object>> user1Following = jdbcTemplate.queryForList(sql, userId1);
+            
+            List<Map<String, Object>> user2Following = jdbcTemplate.queryForList(sql, userId2);
+            
+            java.util.Set<Object> set1 = user1Following.stream()
+                    .map(row -> row.get("following"))
+                    .collect(java.util.stream.Collectors.toSet());
+            
+            java.util.Set<Object> set2 = user2Following.stream()
+                    .map(row -> row.get("following"))
+                    .collect(java.util.stream.Collectors.toSet());
+            
+            return calculateJaccardIndex(set1, set2);
+        } catch (Exception e) {
+            log.error("Error calculating following Jaccard similarity between users {} and {}: {}", 
+                    userId1, userId2, e.getMessage(), e);
+            return 0.0;
+        }
+    }
+
+    public double calculateCombinedJaccardSimilarity(String userId1, String userId2) {
+        double productSimilarity = calculateProductJaccardSimilarity(userId1, userId2);
+        double followingSimilarity = calculateFollowingJaccardSimilarity(userId1, userId2);
+        
+        return (productSimilarity + followingSimilarity) / 2.0;
+    }
+
+    public List<Map<String, Object>> findSimilarUsers(String userId, int limit, double minSimilarity) {
+        try {
+            String sql = "SELECT * FROM public.get_active_users(?::uuid)";
+            
+            List<Map<String, Object>> users = jdbcTemplate.queryForList(sql, userId);
+            enrichUserMetadata(users);
+            
+            List<Map<String, Object>> similarUsers = new java.util.ArrayList<>();
+            for (Map<String, Object> user : users) {
+                String otherUserId = user.get("id").toString();
+                double similarity = calculateCombinedJaccardSimilarity(userId, otherUserId);
+                
+                if (similarity >= minSimilarity) {
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("id", user.get("id"));
+                    result.put("email", user.get("email"));
+                    result.put("display_name", user.get("display_name"));
+                    result.put("similarity", Math.round(similarity * 1000.0) / 1000.0); // Round to 3 decimals
+                    result.put("product_similarity", Math.round(calculateProductJaccardSimilarity(userId, otherUserId) * 1000.0) / 1000.0);
+                    result.put("following_similarity", Math.round(calculateFollowingJaccardSimilarity(userId, otherUserId) * 1000.0) / 1000.0);
+                    similarUsers.add(result);
+                }
+            }
+            
+            similarUsers.sort((a, b) -> {
+                double simA = (double) a.get("similarity");
+                double simB = (double) b.get("similarity");
+                return Double.compare(simB, simA);
+            });
+            
+            return similarUsers.stream()
+                    .limit(limit)
+                    .collect(java.util.stream.Collectors.toList());
+                    
+        } catch (Exception e) {
+            log.error("Error finding similar users for {}: {}", userId, e.getMessage(), e);
+            throw new RuntimeException("Error finding similar users: " + e.getMessage(), e);
+        }
+    }
+
+    private double calculateJaccardIndex(java.util.Set<Object> set1, java.util.Set<Object> set2) {
+        if (set1.isEmpty() && set2.isEmpty()) {
+            return 0.0;
+        }
+        
+        java.util.Set<Object> intersection = new java.util.HashSet<>(set1);
+        intersection.retainAll(set2);
+        
+        java.util.Set<Object> union = new java.util.HashSet<>(set1);
+        union.addAll(set2);
+        
+        return (double) intersection.size() / union.size();
+    }
+
+    /**
+     * Calculate the degree of separation between two users.
+     * 
+     * @param fromUserId Starting user ID
+     * @param toUserId Target user ID
+     * @return Degree of separation (1 = direct follow, 2 = friend of friend, etc.)
+     *         Returns null if users are not connected within 6 degrees
+     */
+    public Integer getDegreeOfSeparation(String fromUserId, String toUserId) {
+        if (fromUserId.equals(toUserId)) {
+            return 0;  // Same user
+        }
+
+        try {
+            String sql = """
+                WITH RECURSIVE follow_paths AS (
+                    -- Base case: Direct follows (degree 1)
+                    SELECT 
+                        following as user_id,
+                        1 as degree,
+                        ARRAY[uid, following]::uuid[] as path
+                    FROM public.relations
+                    WHERE uid = ?::uuid
+                    
+                    UNION ALL
+                    
+                    -- Recursive case: Follows of follows
+                    SELECT 
+                        r.following as user_id,
+                        fp.degree + 1 as degree,
+                        fp.path || r.following
+                    FROM public.relations r
+                    INNER JOIN follow_paths fp ON r.uid = fp.user_id
+                    WHERE fp.degree < 6
+                        AND r.following != ALL(fp.path)  -- Prevent cycles
+                        AND NOT EXISTS (
+                            SELECT 1 
+                            FROM unnest(fp.path) as p(user_id) 
+                            WHERE p.user_id = r.following
+                        )
+                )
+                SELECT MIN(degree) as min_degree
+                FROM follow_paths
+                WHERE user_id = ?::uuid
+            """;
+
+            List<Map<String, Object>> results = jdbcTemplate.queryForList(
+                    sql, fromUserId, toUserId);
+
+            if (results.isEmpty() || results.get(0).get("min_degree") == null) {
+                return null;  // Not connected within limit
+            }
+
+            return ((Number) results.get(0).get("min_degree")).intValue();
+
+        } catch (Exception e) {
+            log.error("Error calculating degree of separation from {} to {}: {}", 
+                    fromUserId, toUserId, e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Get extended user profile with metrics (similarity, degree of separation) relative to a viewer.
+     */
+    public Map<String, Object> getUserProfileWithMetrics(String targetUserId, String viewerUserId) {
+        Map<String, Object> userProfile = getUserById(targetUserId);
+        if (userProfile == null) {
+            return null;
+        }
+        
+        // Add metrics if a viewer is provided and it's not the same user
+        if (viewerUserId != null && !viewerUserId.equals(targetUserId)) {
+            // Calculate similarity
+            double similarity = calculateCombinedJaccardSimilarity(viewerUserId, targetUserId);
+            userProfile.put("similarity", Math.round(similarity * 1000.0) / 1000.0);
+            
+            // Calculate degree of separation
+            Integer degree = getDegreeOfSeparation(viewerUserId, targetUserId);
+            userProfile.put("degree_of_separation", degree);
+        }
+        
+        return userProfile;
     }
 }
 
