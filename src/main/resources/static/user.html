@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile – Trustworthy Product Reviews</title>
+    <link rel="stylesheet" href="css/index.css">
+    <script>
+        window.__SUPABASE_URL__ = 'https://yoeskespkkrctuxgezee.supabase.co';
+        window.__SUPABASE_ANON_KEY__ = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvZXNrZXNwa2tyY3R1eGdlemVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1OTMyNzUsImV4cCI6MjA3NzE2OTI3NX0.FtDQiqVaFliz40lx8-w_p7E4EIBiX5SiRDdSPDQVY4o';
+    </script>
+    <style>
+        .user-profile-header {
+            background: var(--panel);
+            border-radius: 1rem;
+            padding: 2rem;
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+        
+        .user-info-grid {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 2rem;
+            align-items: start;
+        }
+        
+        .user-name {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .user-email {
+            color: var(--muted);
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .user-stats {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+        
+        .user-metrics {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+        
+        .metric-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            font-size: 0.9rem;
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+        
+        .metric-badge.high-match {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+        
+        .profile-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+        
+        .profile-tab {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            color: var(--muted);
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .profile-tab:hover {
+            color: var(--foreground);
+        }
+        
+        .profile-tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+        
+        .review-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .review-product-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .review-date {
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container header__container">
+            <a href="/" class="logo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+                Trustworthy Reviews
+            </a>
+            <nav class="nav">
+                <a href="/app.html" class="nav__link">Dashboard</a>
+                <a href="#" class="nav__link" id="logout-btn">Log out</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container main-content">
+        <div id="loading-state" style="text-align: center; padding: 4rem;">
+            <div class="spinner"></div>
+            <p>Loading user profile...</p>
+        </div>
+
+        <div id="error-state" class="hidden" style="text-align: center; padding: 4rem; color: var(--danger);">
+            <h2>User Not Found</h2>
+            <p>The user you are looking for does not exist or could not be loaded.</p>
+            <a href="/app.html" class="button" style="margin-top: 1rem;">Back to Dashboard</a>
+        </div>
+
+        <div id="profile-content" class="hidden">
+            <div class="user-profile-header">
+                <div class="user-info-grid">
+                    <div>
+                        <h1 class="user-name" id="user-name">Loading...</h1>
+                        <div class="user-email" id="user-email">...</div>
+                        
+                        <div class="user-stats">
+                            <div class="stat-item">
+                                <span class="stat-value" id="reviews-count">-</span>
+                                <span class="stat-label">Reviews</span>
+                            </div>
+                            <div class="stat-item" style="cursor: pointer;" id="show-followers">
+                                <span class="stat-value" id="followers-count">-</span>
+                                <span class="stat-label">Followers</span>
+                            </div>
+                            <div class="stat-item" style="cursor: pointer;" id="show-following">
+                                <span class="stat-value" id="following-count">-</span>
+                                <span class="stat-label">Following</span>
+                            </div>
+                        </div>
+
+                        <div class="user-metrics" id="user-metrics">
+                            <!-- Metrics injected here -->
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <button id="follow-btn" class="button">Follow</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-tabs">
+                <div class="profile-tab active" data-tab="reviews">Reviews</div>
+                <div class="profile-tab" data-tab="following">Following</div>
+                <div class="profile-tab" data-tab="followers">Followers</div>
+            </div>
+
+            <div id="tab-content-reviews" class="tab-content">
+                <div id="reviews-list">
+                    <!-- Reviews injected here -->
+                </div>
+            </div>
+
+            <div id="tab-content-following" class="tab-content hidden">
+                <div id="following-list" class="profile-list">
+                    <!-- Following list injected here -->
+                </div>
+            </div>
+
+            <div id="tab-content-followers" class="tab-content hidden">
+                <div id="followers-list" class="profile-list">
+                    <!-- Followers list injected here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">&copy; <span id="year"></span> Trustworthy Product Reviews.</footer>
+
+    <script type="module" src="js/user.js"></script>
+</body>
+</html>
+

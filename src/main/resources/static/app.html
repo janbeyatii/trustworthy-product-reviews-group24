@@ -55,12 +55,14 @@
                 <div class="profile-tabs">
                     <button class="profile-tab active" id="following-tab">Following</button>
                     <button class="profile-tab" id="followers-tab">Followers</button>
+                    <button class="profile-tab" id="similar-users-tab">Similar Users</button>
                     <button class="profile-tab" id="search-users-tab">Search</button>
                 </div>
                 
                 <div class="profile-content" id="profile-content">
                     <div class="profile-list" id="following-list"></div>
                     <div class="profile-list hidden" id="followers-list"></div>
+                    <div class="profile-list hidden" id="similar-users-list"></div>
                     <div class="hidden" id="search-users-section">
                         <div class="search-users">
                             <input type="text" id="user-search-input" placeholder="Search by email or username..." class="search-input">
@@ -72,12 +74,10 @@
         </article>
     </section>
     <section class="dashboard__content">
-    <!--Products-->
     <div id="products-container" class="products-container">
     </div>
 </section>
 </main>
-<!-- Account Settings Modals -->
 <div class="modal" id="display-name-modal">
     <div class="modal__content">
         <div class="modal__header">
@@ -118,7 +118,6 @@
     </div>
 </div>
 
-<!-- User Profile Modal -->
 <div class="modal" id="user-profile-modal">
     <div class="modal__content">
         <div class="modal__header">

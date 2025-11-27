@@ -17,19 +17,14 @@ public class UserController {
     @Autowired
     private HystrixUserService hystrixUserService;
 
-    /**
-     * Returns information about the currently authenticated user.
-     */
     @GetMapping("/whoami")
     public ResponseEntity<?> whoAmI() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // Check if user is authenticated and is of type SupabaseUser
         if (authentication == null || !(authentication.getPrincipal() instanceof SupabaseUser user)) {
             return ResponseEntity.status(401).body(Map.of("message", "Not authenticated"));
         }
 
-        // Return user details
         return ResponseEntity.ok(Map.of(
                 "id", user.getId(),
                 "email", user.getEmail(),
@@ -37,9 +32,6 @@ public class UserController {
         ));
     }
 
-    /**
-     * Searches users based on a query string (typically email or username).
-     */
     @GetMapping("/users/search")
     public ResponseEntity<?> searchUsers(@RequestParam String query) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -48,7 +40,6 @@ public class UserController {
             return ResponseEntity.status(401).body(Map.of("message", "Not authenticated"));
         }
 
-        // Return empty list if query is blank
         if (query == null || query.trim().isEmpty()) {
             return ResponseEntity.ok(List.of());
         }
@@ -61,19 +52,19 @@ public class UserController {
         }
     }
 
-    /**
-     * Retrieves a specific user's profile by user ID.
-     */
     @GetMapping("/users/{userId}")
     public ResponseEntity<?> getUserProfile(@PathVariable String userId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String viewerId = null;
 
-        if (authentication == null || !(authentication.getPrincipal() instanceof SupabaseUser)) {
-            return ResponseEntity.status(401).body(Map.of("message", "Not authenticated"));
+        if (authentication != null && authentication.getPrincipal() instanceof SupabaseUser) {
+            viewerId = ((SupabaseUser) authentication.getPrincipal()).getId();
         }
 
         try {
-            Map<String, Object> user = hystrixUserService.getUserById(userId);
+            // Fetch user profile with metrics (similarity, degree of separation) if viewer is authenticated
+            Map<String, Object> user = hystrixUserService.getUserProfileWithMetrics(userId, viewerId);
+            
             if (user == null) {
                 return ResponseEntity.status(404).body(Map.of("message", "User not found"));
             }
@@ -83,9 +74,6 @@ public class UserController {
         }
     }
 
-    /**
-     * Retrieves the list of users that the currently authenticated user is following.
-     */
     @GetMapping("/users/me/following")
     public ResponseEntity<?> getCurrentUserFollowing() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -101,9 +89,6 @@ public class UserController {
         }
     }
 
-    /**
-     * Retrieves the list of users who follow the currently authenticated user.
-     */
     @GetMapping("/users/me/followers")
     public ResponseEntity<?> getCurrentUserFollowers() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -116,6 +101,56 @@ public class UserController {
             return ResponseEntity.ok(hystrixUserService.getFollowersForUser(user.getId()));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("message", "Error fetching followers: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/users/me/similar")
+    public ResponseEntity<?> getSimilarUsers(
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(defaultValue = "0.1") double minSimilarity) {
+        
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !(authentication.getPrincipal() instanceof SupabaseUser user)) {
+            return ResponseEntity.status(401).body(Map.of("message", "Not authenticated"));
+        }
+
+        if (limit < 1 || limit > 50) {
+            return ResponseEntity.status(400).body(Map.of("message", "Limit must be between 1 and 50"));
+        }
+        
+        if (minSimilarity < 0.0 || minSimilarity > 1.0) {
+            return ResponseEntity.status(400).body(Map.of("message", "minSimilarity must be between 0.0 and 1.0"));
+        }
+
+        try {
+            List<Map<String, Object>> similarUsers = hystrixUserService.findSimilarUsers(
+                    user.getId(), limit, minSimilarity);
+            return ResponseEntity.ok(similarUsers);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("message", "Error finding similar users: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/users/similarity/{userId}")
+    public ResponseEntity<?> calculateSimilarity(@PathVariable String userId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !(authentication.getPrincipal() instanceof SupabaseUser user)) {
+            return ResponseEntity.status(401).body(Map.of("message", "Not authenticated"));
+        }
+
+        try {
+            double similarity = hystrixUserService.calculateCombinedJaccardSimilarity(
+                    user.getId(), userId);
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("user_id", userId);
+            result.put("similarity", Math.round(similarity * 1000.0) / 1000.0);
+            
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("message", "Error calculating similarity: " + e.getMessage()));
         }
     }
 }

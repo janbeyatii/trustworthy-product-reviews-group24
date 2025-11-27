@@ -111,7 +111,8 @@ class UserControllerTest {
         mockAuth(user);
 
         Map<String, Object> mockUser = Map.of("id", "999", "email", "target@mail.com", "name", "Target User");
-        when(hystrixUserService.getUserById("999")).thenReturn(mockUser);
+        // Updated to mock getUserProfileWithMetrics instead of getUserById
+        when(hystrixUserService.getUserProfileWithMetrics("999", "10")).thenReturn(mockUser);
 
         System.out.println("Query: getUserProfile('999')");
         System.out.println("Mock service will return: " + mockUser);
@@ -123,20 +124,25 @@ class UserControllerTest {
         assertEquals(mockUser, res.getBody());
 
         // Not found
-        when(hystrixUserService.getUserById("200")).thenReturn(null);
+        when(hystrixUserService.getUserProfileWithMetrics("200", "10")).thenReturn(null);
         ResponseEntity<?> notFoundRes = userController.getUserProfile("200");
         System.out.println("Query: getUserProfile('200')");
         System.out.println("Result: " + notFoundRes.getBody());
 
         assertEquals(404, notFoundRes.getStatusCodeValue());
 
-        // Unauthenticated
+        // Unauthenticated - now allowed
         SecurityContextHolder.clearContext();
+        // Unauthenticated calls pass null as viewerId
+        when(hystrixUserService.getUserProfileWithMetrics("777", null)).thenReturn(mockUser);
+        
         ResponseEntity<?> unauthRes = userController.getUserProfile("777");
         System.out.println("Query: getUserProfile('777') (unauthenticated)");
         System.out.println("Result: " + unauthRes.getBody());
 
-        assertEquals(401, unauthRes.getStatusCodeValue());
+        assertEquals(200, unauthRes.getStatusCodeValue());
+        assertEquals(mockUser, unauthRes.getBody());
+        
         System.out.println("getUserProfile test completed\n");
     }
 
