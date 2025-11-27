@@ -1281,6 +1281,72 @@ p {
     color: #86efac;
 }
 
+.review-sort-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 0.75rem;
+}
+
+.sort-button {
+    padding: 0.5rem 1rem;
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 0.5rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sort-button:hover {
+    background: rgba(30, 41, 59, 1);
+    border-color: rgba(148, 163, 184, 0.5);
+    color: var(--text);
+}
+
+.sort-button.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg);
+}
+
+.similarity-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.6rem;
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #38bdf8;
+}
+
+.similarity-badge.high {
+    background: rgba(134, 239, 172, 0.15);
+    border-color: rgba(134, 239, 172, 0.3);
+    color: #86efac;
+}
+
+.similarity-badge.medium {
+    background: rgba(251, 191, 36, 0.15);
+    border-color: rgba(251, 191, 36, 0.3);
+    color: #fbbf24;
+}
+
+.similarity-badge.low {
+    background: rgba(148, 163, 184, 0.15);
+    border-color: rgba(148, 163, 184, 0.3);
+    color: var(--muted);
+}
+
 .reviews-list {
     display: flex;
     flex-direction: column;

@@ -70,10 +70,14 @@ public class ReviewService {
     }
 
     public List<Map<String, Object>> getReviewsForProduct(int productId) {
-        return getReviewsForProduct(productId, null);
+        return getReviewsForProduct(productId, null, null);
     }
 
     public List<Map<String, Object>> getReviewsForProduct(int productId, String currentUserId) {
+        return getReviewsForProduct(productId, currentUserId, null);
+    }
+
+    public List<Map<String, Object>> getReviewsForProduct(int productId, String currentUserId, String sortBy) {
         try {
             String sql = """
                 SELECT 
@@ -106,15 +110,30 @@ public class ReviewService {
                 }
             }
             
-            // Calculate degree of separation if current user is provided
             if (currentUserId != null) {
                 for (Map<String, Object> review : reviews) {
                     String reviewerId = (String) review.get("uid");
                     if (reviewerId != null && !reviewerId.equals(currentUserId)) {
                         Integer degree = userService.getDegreeOfSeparation(currentUserId, reviewerId);
                         review.put("degree_of_separation", degree);
+                        
+                        double similarity = userService.calculateCombinedJaccardSimilarity(currentUserId, reviewerId);
+                        review.put("similarity_score", Math.round(similarity * 1000.0) / 1000.0);
+                    } else if (reviewerId != null && reviewerId.equals(currentUserId)) {
+                        // User's own review
+                        review.put("similarity_score", 1.0);
+                        review.put("is_own_review", true);
                     }
                 }
+            }
+            
+            if (sortBy != null && "similarity".equalsIgnoreCase(sortBy) && currentUserId != null) {
+                reviews.sort((a, b) -> {
+                    Double simA = (Double) a.getOrDefault("similarity_score", 0.0);
+                    Double simB = (Double) b.getOrDefault("similarity_score", 0.0);
+                    // Sort descending (highest similarity first)
+                    return Double.compare(simB, simA);
+                });
             }
             
             return reviews;

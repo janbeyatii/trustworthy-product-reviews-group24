@@ -49,7 +49,9 @@ public class ReviewController {
     }
 
     @GetMapping("/products/{id}/reviews")
-    public ResponseEntity<?> getProductReviews(@PathVariable("id") int productId) {
+    public ResponseEntity<?> getProductReviews(
+            @PathVariable("id") int productId,
+            @RequestParam(value = "sort", required = false) String sortBy) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentUserId = null;
         if (authentication != null && authentication.getPrincipal() instanceof SupabaseUser user) {
@@ -57,7 +59,7 @@ public class ReviewController {
         }
 
         try {
-            List<Map<String, Object>> reviews = reviewService.getReviewsForProduct(productId, currentUserId);
+            List<Map<String, Object>> reviews = reviewService.getReviewsForProduct(productId, currentUserId, sortBy);
             return ResponseEntity.ok(reviews);
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("message", "Error fetching reviews: " + e.getMessage()));
