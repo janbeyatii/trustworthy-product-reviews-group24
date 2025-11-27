@@ -432,7 +432,7 @@ function createSimilarUserItem(user) {
     const displayName = user.display_name;
     const similarity = (user.similarity * 100).toFixed(1);
     const productSim = (user.product_similarity * 100).toFixed(0);
-    const followingSim = (user.following_similarity * 100).toFixed(0);
+    const ratingSim = (user.rating_similarity * 100).toFixed(0);
     
     const getColorForScore = (score) => {
         if (score >= 0.5) return '#10b981';
@@ -451,7 +451,7 @@ function createSimilarUserItem(user) {
                     <div class="similarity-bar-fill" style="width: ${similarity}%; height: 100%; background: ${barColor}; transition: width 0.3s ease;"></div>
                 </div>
                 <div class="similarity-details" style="display: flex; gap: 1rem; margin-top: 0.5rem; font-size: 0.8rem; color: var(--muted);">
-                    <span title="Overall similarity">${similarity}% overall match (${productSim}% product match, ${followingSim}% follower match)</span>
+                    <span title="Overall similarity">${similarity}% overall match (${productSim}% product match, ${ratingSim}% rating match)</span>
                 </div>
             </div>
         </div>
