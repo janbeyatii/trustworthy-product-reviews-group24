@@ -53,6 +53,35 @@ public class ProductService {
         return jdbcTemplate.queryForList(sql);
     }
 
+    public List<Map<String, Object>> getProductsByCategory(String productCategory) {
+
+        String sql = """
+            SELECT 
+                product_id,
+                name,
+                avg_rating,
+                description,
+                image,
+                link,
+                category
+            FROM products
+            ORDER BY name
+            WHERE category = ?
+        """;
+        return jdbcTemplate.queryForList(sql, productCategory);
+    }
+
+    public List<Map<String, Object>> getProductCategories() {
+
+        String sql = """
+            SELECT DISTINCT
+                category
+            FROM products
+            ORDER BY name
+        """;
+        return jdbcTemplate.queryForList(sql);
+    }
+
     /**
      * Get product by ID
      */
