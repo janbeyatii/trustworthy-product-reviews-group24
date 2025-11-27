@@ -362,5 +362,90 @@ public class UserService {
         
         return (double) intersection.size() / union.size();
     }
+
+    /**
+     * Calculate the degree of separation between two users.
+     * 
+     * @param fromUserId Starting user ID
+     * @param toUserId Target user ID
+     * @return Degree of separation (1 = direct follow, 2 = friend of friend, etc.)
+     *         Returns null if users are not connected within 6 degrees
+     */
+    public Integer getDegreeOfSeparation(String fromUserId, String toUserId) {
+        if (fromUserId.equals(toUserId)) {
+            return 0;  // Same user
+        }
+
+        try {
+            String sql = """
+                WITH RECURSIVE follow_paths AS (
+                    -- Base case: Direct follows (degree 1)
+                    SELECT 
+                        following as user_id,
+                        1 as degree,
+                        ARRAY[uid, following]::uuid[] as path
+                    FROM public.relations
+                    WHERE uid = ?::uuid
+                    
+                    UNION ALL
+                    
+                    -- Recursive case: Follows of follows
+                    SELECT 
+                        r.following as user_id,
+                        fp.degree + 1 as degree,
+                        fp.path || r.following
+                    FROM public.relations r
+                    INNER JOIN follow_paths fp ON r.uid = fp.user_id
+                    WHERE fp.degree < 6
+                        AND r.following != ALL(fp.path)  -- Prevent cycles
+                        AND NOT EXISTS (
+                            SELECT 1 
+                            FROM unnest(fp.path) as p(user_id) 
+                            WHERE p.user_id = r.following
+                        )
+                )
+                SELECT MIN(degree) as min_degree
+                FROM follow_paths
+                WHERE user_id = ?::uuid
+            """;
+
+            List<Map<String, Object>> results = jdbcTemplate.queryForList(
+                    sql, fromUserId, toUserId);
+
+            if (results.isEmpty() || results.get(0).get("min_degree") == null) {
+                return null;  // Not connected within limit
+            }
+
+            return ((Number) results.get(0).get("min_degree")).intValue();
+
+        } catch (Exception e) {
+            log.error("Error calculating degree of separation from {} to {}: {}", 
+                    fromUserId, toUserId, e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Get extended user profile with metrics (similarity, degree of separation) relative to a viewer.
+     */
+    public Map<String, Object> getUserProfileWithMetrics(String targetUserId, String viewerUserId) {
+        Map<String, Object> userProfile = getUserById(targetUserId);
+        if (userProfile == null) {
+            return null;
+        }
+        
+        // Add metrics if a viewer is provided and it's not the same user
+        if (viewerUserId != null && !viewerUserId.equals(targetUserId)) {
+            // Calculate similarity
+            double similarity = calculateCombinedJaccardSimilarity(viewerUserId, targetUserId);
+            userProfile.put("similarity", Math.round(similarity * 1000.0) / 1000.0);
+            
+            // Calculate degree of separation
+            Integer degree = getDegreeOfSeparation(viewerUserId, targetUserId);
+            userProfile.put("degree_of_separation", degree);
+        }
+        
+        return userProfile;
+    }
 }
 

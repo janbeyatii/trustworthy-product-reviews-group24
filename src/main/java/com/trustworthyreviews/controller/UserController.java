@@ -55,13 +55,16 @@ public class UserController {
     @GetMapping("/users/{userId}")
     public ResponseEntity<?> getUserProfile(@PathVariable String userId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String viewerId = null;
 
-        if (authentication == null || !(authentication.getPrincipal() instanceof SupabaseUser)) {
-            return ResponseEntity.status(401).body(Map.of("message", "Not authenticated"));
+        if (authentication != null && authentication.getPrincipal() instanceof SupabaseUser) {
+            viewerId = ((SupabaseUser) authentication.getPrincipal()).getId();
         }
 
         try {
-            Map<String, Object> user = hystrixUserService.getUserById(userId);
+            // Fetch user profile with metrics (similarity, degree of separation) if viewer is authenticated
+            Map<String, Object> user = hystrixUserService.getUserProfileWithMetrics(userId, viewerId);
+            
             if (user == null) {
                 return ResponseEntity.status(404).body(Map.of("message", "User not found"));
             }

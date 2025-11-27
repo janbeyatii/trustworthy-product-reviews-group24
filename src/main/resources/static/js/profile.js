@@ -192,7 +192,7 @@ function createUserItem(user, userId) {
     const viewButton = item.querySelector('button');
 
     const viewProfile = async () => {
-        await showUserProfile(userId, email);
+        window.location.href = `/user.html?id=${userId}`;
     };
 
     infoDiv.addEventListener('click', viewProfile);
@@ -201,59 +201,9 @@ function createUserItem(user, userId) {
     return item;
 }
 
-async function showUserProfile(userId, email) {
-    const userProfileModal = document.getElementById('user-profile-modal');
-    const profileModalName = document.getElementById('profile-modal-name');
-    const profileFollowingCount = document.getElementById('profile-following-count');
-    const profileFollowersCount = document.getElementById('profile-followers-count');
-    const toggleFollowButton = document.getElementById('toggle-follow-button');
-
-    if (!userProfileModal) return;
-
-    profileModalName.textContent = email || 'User';
-
-    try {
-        // Load following count
-        const { count: followingCount } = await supabaseClient
-            .from('relations')
-            .select('*', { count: 'exact', head: true })
-            .eq('uid', userId);
-
-        // Load followers count
-        const { count: followersCount } = await supabaseClient
-            .from('relations')
-            .select('*', { count: 'exact', head: true })
-            .eq('following', userId);
-
-        profileFollowingCount.textContent = followingCount || 0;
-        profileFollowersCount.textContent = followersCount || 0;
-
-        // Check if current user is following this user
-        const { data: isFollowing } = await supabaseClient
-            .from('relations')
-            .select('*')
-            .eq('uid', currentUserId)
-            .eq('following', userId)
-            .single();
-
-        toggleFollowButton.dataset.targetUserId = userId;
-        toggleFollowButton.textContent = isFollowing ? 'Unfollow' : 'Follow';
-        
-        if (userId === currentUserId) {
-            toggleFollowButton.style.display = 'none';
-        } else {
-            toggleFollowButton.style.display = 'block';
-        }
-    } catch (error) {
-        console.error('Error loading user profile:', error);
-        profileFollowingCount.textContent = '0';
-        profileFollowersCount.textContent = '0';
-    }
-
-    openModal(userProfileModal);
-}
-
 async function toggleFollow(targetUserId) {
+    // Keep this for now if we want to add follow buttons to the list items later
+    // But currently they just have "View" buttons.
     if (!currentUserId || !targetUserId) return;
 
     try {
@@ -264,47 +214,33 @@ async function toggleFollow(targetUserId) {
             .eq('uid', currentUserId)
             .eq('following', targetUserId);
 
-        if (checkError) {
-            console.error('Error checking relation:', checkError);
-        }
+        if (checkError) throw checkError;
 
         if (existingRelation && existingRelation.length > 0) {
-            // Unfollow - delete the row
+            // Unfollow
             const { error: deleteError } = await supabaseClient
                 .from('relations')
                 .delete()
                 .eq('uid', currentUserId)
                 .eq('following', targetUserId);
-
-            if (deleteError) {
-                console.error('Delete error:', deleteError);
-                throw deleteError;
-            }
+            if (deleteError) throw deleteError;
         } else {
-            // Follow - insert new row with uid and following
+            // Follow
             const { error: insertError } = await supabaseClient
                 .from('relations')
-                .insert({ 
-                    uid: currentUserId, 
-                    following: targetUserId
-                });
-
-            if (insertError) {
-                console.error('Insert error:', insertError);
-                throw insertError;
-            }
+                .insert({ uid: currentUserId, following: targetUserId });
+            if (insertError) throw insertError;
         }
-
-        // Refresh the profile modal
-        const targetUserEmail = document.getElementById('profile-modal-name').textContent;
-        await showUserProfile(targetUserId, targetUserEmail);
         
-        // Refresh the following/followers lists
+        // Refresh lists
         await loadFollowing();
         await loadFollowers();
+        if (document.getElementById('similar-users-list')?.offsetParent) {
+            loadSimilarUsers(); // Refresh similar users too if visible
+        }
     } catch (error) {
         console.error('Error toggling follow:', error);
-        alert('Error updating follow status: ' + (error.message || 'Please try again.'));
+        alert('Error updating follow status');
     }
 }
 
@@ -377,7 +313,7 @@ function createSearchUserItem(userId, email) {
     const viewButton = item.querySelector('button');
 
     const viewProfile = async () => {
-        await showUserProfile(userId, email);
+        window.location.href = `/user.html?id=${userId}`;
     };
 
     infoDiv.addEventListener('click', viewProfile);
@@ -520,12 +456,13 @@ function createSimilarUserItem(user) {
             </div>
         </div>
         <button class="button profile-action-btn">View</button>
+    `;
 
     const infoDiv = item.querySelector('.profile-item-info');
     const viewButton = item.querySelector('button');
 
     const viewProfile = async () => {
-        await showUserProfile(user.id, email);
+        window.location.href = `/user.html?id=${user.id}`;
     };
 
     infoDiv.addEventListener('click', viewProfile);

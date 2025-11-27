@@ -23,7 +23,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/", "/index.html", "/app.html","/product.html", "/debug.html", "/css/**", "/js/**", "/images/**", "/health","/api/products/**", "/api/debug/**").permitAll()
+                        .requestMatchers("/", "/index.html", "/app.html","/product.html", "/user.html", "/debug.html", "/css/**", "/js/**", "/images/**", "/health","/api/products/**", "/api/debug/**", "/favicon.ico").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(supabaseJwtFilter, UsernamePasswordAuthenticationFilter.class);

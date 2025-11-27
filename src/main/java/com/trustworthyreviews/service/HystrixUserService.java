@@ -62,6 +62,10 @@ public class HystrixUserService {
         return new CalculateCombinedSimilarityCommand(userId1, userId2, userService).execute();
     }
 
+    public Map<String, Object> getUserProfileWithMetrics(String targetUserId, String viewerUserId) {
+        return new GetUserProfileWithMetricsCommand(targetUserId, viewerUserId, userService).execute();
+    }
+
     // Hystrix Commands
     
     private static class SearchUsersCommand extends HystrixCommand<List<Map<String, Object>>> {
@@ -247,6 +251,39 @@ public class HystrixUserService {
         protected Double getFallback() {
             log.warn("CalculateCombinedSimilarity circuit breaker opened or timed out for users {} and {}. Returning 0.0.", userId1, userId2);
             return 0.0;
+        }
+    }
+
+    private static class GetUserProfileWithMetricsCommand extends HystrixCommand<Map<String, Object>> {
+        private final String targetUserId;
+        private final String viewerUserId;
+        private final UserService userService;
+
+        protected GetUserProfileWithMetricsCommand(String targetUserId, String viewerUserId, UserService userService) {
+            super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey("Database"))
+                    .andCommandKey(HystrixCommandKey.Factory.asKey("GetUserProfileWithMetrics"))
+                    .andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
+                            .withCircuitBreakerEnabled(true)
+                            .withCircuitBreakerRequestVolumeThreshold(10)
+                            .withCircuitBreakerErrorThresholdPercentage(50)
+                            .withCircuitBreakerSleepWindowInMilliseconds(5000)
+                            .withExecutionTimeoutInMilliseconds(5000)
+                            .withFallbackEnabled(true)));
+            this.targetUserId = targetUserId;
+            this.viewerUserId = viewerUserId;
+            this.userService = userService;
+        }
+
+        @Override
+        protected Map<String, Object> run() throws Exception {
+            return userService.getUserProfileWithMetrics(targetUserId, viewerUserId);
+        }
+
+        @Override
+        protected Map<String, Object> getFallback() {
+            log.warn("GetUserProfileWithMetrics circuit breaker opened or timed out. Returning basic profile.");
+            // Fallback: try to get just the user profile without metrics
+            return userService.getUserById(targetUserId);
         }
     }
 }
