@@ -48,24 +48,10 @@ public class UserService {
                 throw new RuntimeException("Simulated database failure for circuit breaker testing");
             }
             
-            String sql = """
-                SELECT 
-                    id,
-                    email,
-                    raw_user_meta_data,
-                    created_at
-                FROM auth.users
-                WHERE 
-                    email ILIKE ?
-                    OR
-                    raw_user_meta_data::text ILIKE CONCAT('%display_name": "', ?)
-                ORDER BY email
-                LIMIT 20
-            """;
+            String sql = "SELECT * FROM public.search_users_secure(?)";
             
-            String email_pattern = "%" + query + "%";
-            String display_name_pattern = query + "%";
-            List<Map<String, Object>> users = jdbcTemplate.queryForList(sql, email_pattern, display_name_pattern);
+            String searchPattern = "%" + query + "%";
+            List<Map<String, Object>> users = jdbcTemplate.queryForList(sql, searchPattern);
             
             enrichUserMetadata(users);
             
@@ -107,9 +93,9 @@ public class UserService {
                     u.id,
                     u.email,
                     u.raw_user_meta_data
-                FROM public.relations r
-                JOIN auth.users u ON u.id = r.following
-                WHERE r.uid = ?
+                FROM public.relations r,
+                LATERAL public.get_user_details(r.following) u
+                WHERE r.uid = ?::uuid
                 ORDER BY u.email
             """;
 
@@ -129,9 +115,9 @@ public class UserService {
                     u.id,
                     u.email,
                     u.raw_user_meta_data
-                FROM public.relations r
-                JOIN auth.users u ON u.id = r.uid
-                WHERE r.following = ?
+                FROM public.relations r,
+                LATERAL public.get_user_details(r.uid) u
+                WHERE r.following = ?::uuid
                 ORDER BY u.email
             """;
 
@@ -145,15 +131,7 @@ public class UserService {
     }
 
     private List<Map<String, Object>> queryUserById(String userId) {
-        String sql = """
-                SELECT 
-                    id,
-                    email,
-                    created_at,
-                    raw_user_meta_data
-                FROM auth.users
-                WHERE id = ?
-            """;
+        String sql = "SELECT * FROM public.get_user_details(?::uuid)";
 
         List<Map<String, Object>> results = jdbcTemplate.queryForList(sql, userId);
         enrichUserMetadata(results);
@@ -302,16 +280,7 @@ public class UserService {
 
     public List<Map<String, Object>> findSimilarUsers(String userId, int limit, double minSimilarity) {
         try {
-            String sql = """
-                SELECT DISTINCT u.id, u.email, u.raw_user_meta_data
-                FROM auth.users u
-                WHERE u.id != ?::uuid
-                AND (
-                    EXISTS (SELECT 1 FROM product_reviews WHERE uid = u.id)
-                    OR EXISTS (SELECT 1 FROM relations WHERE uid = u.id)
-                )
-                LIMIT 100
-            """;
+            String sql = "SELECT * FROM public.get_active_users(?::uuid)";
             
             List<Map<String, Object>> users = jdbcTemplate.queryForList(sql, userId);
             enrichUserMetadata(users);
