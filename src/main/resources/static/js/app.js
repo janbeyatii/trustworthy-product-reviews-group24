@@ -25,6 +25,10 @@ const cancelPassword = document.getElementById('cancel-password');
 
 //products elements
 const productsContainer = document.getElementById('products-container');
+const productSearchInput = document.getElementById('product-search-input');
+
+// Holds fetched products for client-side filtering
+let allProducts = [];
 
 const setStatus = (element, message, type = 'info') => {
     if (!element) return;
@@ -115,6 +119,30 @@ const refreshUserProfile = async () => {
     }
 };
 
+const renderProducts = (products) => {
+    if (!productsContainer) return;
+
+    productsContainer.innerHTML = ''; // clear any existing content
+
+    if (!products || products.length === 0) {
+        productsContainer.innerHTML = '<p class="empty">No products found.</p>';
+        return;
+    }
+
+    products.forEach(product => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.innerHTML = `
+            <img src="${product.image}" alt="${product.name}">
+            <h2>${product.name}</h2>
+            <p class="rating">⭐ ${product.avg_rating ?? 'N/A'}</p>
+            <a href="product.html?id=${product.product_id}">View Product</a>
+        `;
+
+        productsContainer.appendChild(card);
+    });
+};
+
 const fetchAndDisplayProducts = async () => {
     try {
         const baseUrl = window.__API_BASE_URL__ ?? window.location.origin;
@@ -122,22 +150,10 @@ const fetchAndDisplayProducts = async () => {
         if (!response.ok) throw new Error('Failed to fetch products');
         const products = await response.json();
 
-        if (!productsContainer) return;
+        // store for client-side search
+        allProducts = Array.isArray(products) ? products : [];
 
-        productsContainer.innerHTML = ''; // clear any existing content
-
-        products.forEach(product => {
-            const card = document.createElement('div');
-            card.className = 'product-card';
-            card.innerHTML = `
-                <img src="${product.image}" alt="${product.name}">
-                <h2>${product.name}</h2>
-                <p class="rating">⭐ ${product.avg_rating ?? 'N/A'}</p>
-                <a href="product.html?id=${product.product_id}">View Product</a>
-            `;
-
-            productsContainer.appendChild(card);
-        });
+        renderProducts(allProducts);
     } catch (err) {
         console.error('Error fetching products:', err);
         if (productsContainer) {
@@ -145,6 +161,28 @@ const fetchAndDisplayProducts = async () => {
         }
     }
 };
+
+// simple debounce helper
+const debounce = (fn, delay = 250) => {
+    let timer;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), delay);
+    };
+};
+
+// wire up product search input to filter the product list by name
+if (productSearchInput) {
+    productSearchInput.addEventListener('input', debounce((e) => {
+        const q = (e.target.value || '').trim().toLowerCase();
+        if (!q) {
+            renderProducts(allProducts);
+            return;
+        }
+        const filtered = allProducts.filter(p => (p.name || '').toLowerCase().includes(q));
+        renderProducts(filtered);
+    }, 200));
+}
 
 const toggleProfileDropdown = () => {
     profileDropdown?.classList.toggle('active');
