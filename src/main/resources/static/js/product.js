@@ -2,6 +2,7 @@ import { supabaseClient } from './auth.js';
 
 let currentUser = null;
 let currentProductId = null;
+let currentSortOrder = null;
 
 const setStatus = (element, message, type = 'info') => {
     if (!element) return;
@@ -112,7 +113,7 @@ const fetchAndDisplayReviewSummary = async (productId) => {
     }
 };
 
-const fetchAndDisplayReviews = async (productId) => {
+const fetchAndDisplayReviews = async (productId, sortBy = null) => {
     const reviewsList = document.getElementById('reviews-list');
     if (!reviewsList) return;
 
@@ -121,7 +122,10 @@ const fetchAndDisplayReviews = async (productId) => {
         const headers = session ? { 'Authorization': `Bearer ${session.access_token}` } : {};
 
         const baseUrl = window.__API_BASE_URL__ ?? window.location.origin;
-        const res = await fetch(`${baseUrl}/api/products/${productId}/reviews`, { headers });
+        const url = sortBy 
+            ? `${baseUrl}/api/products/${productId}/reviews?sort=${sortBy}`
+            : `${baseUrl}/api/products/${productId}/reviews`;
+        const res = await fetch(url, { headers });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const reviews = await res.json();
 
@@ -135,12 +139,25 @@ const fetchAndDisplayReviews = async (productId) => {
             const reviewDate = review.created_at ? new Date(review.created_at).toLocaleDateString() : '';
             const reviewText = review.review_desc || '';
             
-            let degreeBadge = '';
+            let badges = '';
+            
+            if (review.similarity_score !== undefined && review.similarity_score !== null && !review.is_own_review) {
+                const similarity = review.similarity_score;
+                const percentage = (similarity * 100).toFixed(0);
+                let badgeClass = 'low';
+                if (similarity >= 0.7) badgeClass = 'high';
+                else if (similarity >= 0.4) badgeClass = 'medium';
+                
+                badges += `<span class="similarity-badge ${badgeClass}" title="Similarity Score">✨ ${percentage}% similar</span>`;
+            } else if (review.is_own_review) {
+                badges += `<span class="similarity-badge high" title="Your Review">👤 Your Review</span>`;
+            }
+            
             if (review.degree_of_separation !== undefined && review.degree_of_separation !== null) {
                 const degree = review.degree_of_separation;
                 const badgeClass = degree === 1 ? 'degree-badge-direct' : 'degree-badge-indirect';
                 const badgeText = degree === 1 ? 'Direct Connection' : `${degree} Degrees Away`;
-                degreeBadge = `<span class="degree-badge ${badgeClass}" title="Degree of Separation">🔗 ${badgeText}</span>`;
+                badges += `<span class="degree-badge ${badgeClass}" title="Degree of Separation">🔗 ${badgeText}</span>`;
             }
             
             return `
@@ -148,7 +165,7 @@ const fetchAndDisplayReviews = async (productId) => {
                     <div class="review-header">
                         <div class="reviewer-info">
                             <a href="/user.html?id=${review.uid}" class="reviewer-name" style="text-decoration: none;">${escapeHtml(displayName)}</a>
-                            ${degreeBadge}
+                            ${badges}
                             <span class="review-date">${reviewDate}</span>
                         </div>
                         <div class="review-rating">${renderStars(review.review_rating)}</div>
@@ -213,7 +230,7 @@ const handleReviewSubmit = async (event) => {
         await Promise.all([
             fetchAndDisplayProduct(currentProductId),
             fetchAndDisplayReviewSummary(currentProductId),
-            fetchAndDisplayReviews(currentProductId)
+            fetchAndDisplayReviews(currentProductId, currentSortOrder)
         ]);
 
         document.getElementById('reviews-list')?.scrollIntoView({ behavior: 'smooth' });
@@ -230,9 +247,15 @@ const handleReviewSubmit = async (event) => {
 const checkAuthAndShowReviewForm = async () => {
     const { data: { session } } = await supabaseClient.auth.getSession();
     const writeReviewSection = document.getElementById('write-review-section');
+    const sortControls = document.getElementById('review-sort-controls');
     
-    if (session && writeReviewSection) {
-        writeReviewSection.style.display = 'block';
+    if (session) {
+        if (writeReviewSection) {
+            writeReviewSection.style.display = 'block';
+        }
+        if (sortControls) {
+            sortControls.style.display = 'flex';
+        }
         currentUser = session.user;
     }
 };
@@ -267,5 +290,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     const reviewForm = document.getElementById('review-form');
     if (reviewForm) {
         reviewForm.addEventListener('submit', handleReviewSubmit);
+    }
+
+    const sortRecentBtn = document.getElementById('sort-recent');
+    const sortSimilarityBtn = document.getElementById('sort-similarity');
+
+    if (sortRecentBtn) {
+        sortRecentBtn.addEventListener('click', async () => {
+            currentSortOrder = null;
+            sortRecentBtn.classList.add('active');
+            sortSimilarityBtn.classList.remove('active');
+            await fetchAndDisplayReviews(currentProductId, null);
+        });
+    }
+
+    if (sortSimilarityBtn) {
+        sortSimilarityBtn.addEventListener('click', async () => {
+            currentSortOrder = 'similarity';
+            sortSimilarityBtn.classList.add('active');
+            sortRecentBtn.classList.remove('active');
+            await fetchAndDisplayReviews(currentProductId, 'similarity');
+        });
     }
 });

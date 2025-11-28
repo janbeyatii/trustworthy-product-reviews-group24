@@ -303,10 +303,101 @@ public class UserService {
     }
 
     public double calculateCombinedJaccardSimilarity(String userId1, String userId2) {
+        return calculateCombinedJaccardSimilarity(userId1, userId2, false);
+    }
+
+    public double calculateCombinedJaccardSimilarity(String userId1, String userId2, boolean forceRecalculate) {
+        if (!forceRecalculate) {
+            Map<String, Object> cached = getCachedSimilarity(userId1, userId2);
+            if (cached != null) {
+                log.debug("Using cached similarity for users {} and {}", userId1, userId2);
+                return ((Number) cached.get("similarity_score")).doubleValue();
+            }
+        }
+        
         double productSimilarity = calculateProductJaccardSimilarity(userId1, userId2);
         double ratingSimilarity = calculateRatingJaccardSimilarity(userId1, userId2);
+        double combinedSimilarity = (productSimilarity + ratingSimilarity) / 2.0;
         
-        return (productSimilarity + ratingSimilarity) / 2.0;
+        cacheSimilarity(userId1, userId2, combinedSimilarity, productSimilarity, ratingSimilarity);
+        
+        return combinedSimilarity;
+    }
+    
+    private Map<String, Object> getCachedSimilarity(String userId1, String userId2) {
+        try {
+            String[] ordered = orderUserIds(userId1, userId2);
+            String sql = """
+                SELECT similarity_score, product_similarity, rating_similarity, last_calculated
+                FROM user_similarity_cache
+                WHERE uuid1 = ?::uuid AND uuid2 = ?::uuid
+            """;
+            
+            List<Map<String, Object>> results = jdbcTemplate.queryForList(sql, ordered[0], ordered[1]);
+            if (!results.isEmpty()) {
+                return results.get(0);
+            }
+        } catch (Exception e) {
+            log.debug("Cache lookup failed for users {} and {}: {}", userId1, userId2, e.getMessage());
+        }
+        return null;
+    }
+    
+    private void cacheSimilarity(String userId1, String userId2, double similarity, 
+                                  double productSim, double ratingSim) {
+        try {
+            String[] ordered = orderUserIds(userId1, userId2);
+            String sql = """
+                INSERT INTO user_similarity_cache 
+                    (uuid1, uuid2, similarity_score, product_similarity, rating_similarity, last_calculated)
+                VALUES (?::uuid, ?::uuid, ?, ?, ?, NOW())
+                ON CONFLICT (uuid1, uuid2) 
+                DO UPDATE SET 
+                    similarity_score = EXCLUDED.similarity_score,
+                    product_similarity = EXCLUDED.product_similarity,
+                    rating_similarity = EXCLUDED.rating_similarity,
+                    last_calculated = NOW()
+            """;
+            
+            jdbcTemplate.update(sql, ordered[0], ordered[1], similarity, productSim, ratingSim);
+            log.debug("Cached similarity for users {} and {}: {}", userId1, userId2, similarity);
+        } catch (Exception e) {
+            log.warn("Failed to cache similarity for users {} and {}: {}", userId1, userId2, e.getMessage());
+        }
+    }
+    
+    private String[] orderUserIds(String userId1, String userId2) {
+        // Ensure user_id_1 < user_id_2 for consistent storage
+        if (userId1.compareTo(userId2) < 0) {
+            return new String[]{userId1, userId2};
+        } else {
+            return new String[]{userId2, userId1};
+        }
+    }
+    
+    public Map<String, Double> getSimilarityWithComponents(String userId1, String userId2) {
+        Map<String, Object> cached = getCachedSimilarity(userId1, userId2);
+        
+        double combinedSim;
+        double productSim;
+        double ratingSim;
+        
+        if (cached != null) {
+            combinedSim = ((Number) cached.get("similarity_score")).doubleValue();
+            productSim = ((Number) cached.get("product_similarity")).doubleValue();
+            ratingSim = ((Number) cached.get("rating_similarity")).doubleValue();
+        } else {
+            productSim = calculateProductJaccardSimilarity(userId1, userId2);
+            ratingSim = calculateRatingJaccardSimilarity(userId1, userId2);
+            combinedSim = (productSim + ratingSim) / 2.0;
+            cacheSimilarity(userId1, userId2, combinedSim, productSim, ratingSim);
+        }
+        
+        Map<String, Double> result = new HashMap<>();
+        result.put("similarity", combinedSim);
+        result.put("product_similarity", productSim);
+        result.put("rating_similarity", ratingSim);
+        return result;
     }
 
     public List<Map<String, Object>> findSimilarUsers(String userId, int limit, double minSimilarity) {
@@ -319,16 +410,31 @@ public class UserService {
             List<Map<String, Object>> similarUsers = new java.util.ArrayList<>();
             for (Map<String, Object> user : users) {
                 String otherUserId = user.get("id").toString();
-                double similarity = calculateCombinedJaccardSimilarity(userId, otherUserId);
+                
+                Map<String, Object> cached = getCachedSimilarity(userId, otherUserId);
+                double similarity;
+                double productSim;
+                double ratingSim;
+                
+                if (cached != null) {
+                    similarity = ((Number) cached.get("similarity_score")).doubleValue();
+                    productSim = ((Number) cached.get("product_similarity")).doubleValue();
+                    ratingSim = ((Number) cached.get("rating_similarity")).doubleValue();
+                } else {
+                    productSim = calculateProductJaccardSimilarity(userId, otherUserId);
+                    ratingSim = calculateRatingJaccardSimilarity(userId, otherUserId);
+                    similarity = (productSim + ratingSim) / 2.0;
+                    cacheSimilarity(userId, otherUserId, similarity, productSim, ratingSim);
+                }
                 
                 if (similarity >= minSimilarity) {
                     Map<String, Object> result = new HashMap<>();
                     result.put("id", user.get("id"));
                     result.put("email", user.get("email"));
                     result.put("display_name", user.get("display_name"));
-                    result.put("similarity", Math.round(similarity * 1000.0) / 1000.0); // Round to 3 decimals
-                    result.put("product_similarity", Math.round(calculateProductJaccardSimilarity(userId, otherUserId) * 1000.0) / 1000.0);
-                    result.put("rating_similarity", Math.round(calculateRatingJaccardSimilarity(userId, otherUserId) * 1000.0) / 1000.0);
+                    result.put("similarity", Math.round(similarity * 1000.0) / 1000.0);
+                    result.put("product_similarity", Math.round(productSim * 1000.0) / 1000.0);
+                    result.put("rating_similarity", Math.round(ratingSim * 1000.0) / 1000.0);
                     similarUsers.add(result);
                 }
             }
