@@ -132,10 +132,12 @@ const renderProducts = (products) => {
     products.forEach(product => {
         const card = document.createElement('div');
         card.className = 'product-card';
+        const ratingDisplay = product.avg_rating ? product.avg_rating.toFixed(1) : 'N/A';
+        
         card.innerHTML = `
             <img src="${product.image}" alt="${product.name}">
             <h2>${product.name}</h2>
-            <p class="rating">⭐ ${product.avg_rating ?? 'N/A'}</p>
+            <p class="rating">⭐ ${ratingDisplay}</p>
             <a href="product.html?id=${product.product_id}">View Product</a>
         `;
 
