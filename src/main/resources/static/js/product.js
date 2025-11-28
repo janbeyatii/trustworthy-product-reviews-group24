@@ -16,23 +16,20 @@ const setStatus = (element, message, type = 'info') => {
 };
 
 const renderStars = (rating) => {
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
+    const roundedDown = Math.floor(rating);
     let stars = '';
-    
-    for (let i = 0; i < fullStars; i++) {
+
+    for (let i = 0; i < roundedDown; i++) {
         stars += '★';
     }
-    if (hasHalfStar) {
-        stars += '⯨';
-    }
-    const emptyStars = 5 - Math.ceil(rating);
-    for (let i = 0; i < emptyStars; i++) {
+
+    for (let i = roundedDown; i < 5; i++) {
         stars += '☆';
     }
-    
+
     return stars;
 };
+
 
 const fetchAndDisplayProduct = async (productId) => {
     const container = document.getElementById('product-details');
