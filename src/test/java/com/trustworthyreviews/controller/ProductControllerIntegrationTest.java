@@ -17,17 +17,41 @@ public class ProductControllerIntegrationTest {
     private MockMvc mockMvc;
 
     @Test
-    public void getProductByIdIntegration_returnsOkForExistingAndEmptyForNonExisting() throws Exception {
-        // Test existing product (ID 1)
+    public void getAllProducts_returnsOkAndNonEmpty() throws Exception {
+        mockMvc.perform(get("/api/products"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].product_id").exists())
+                .andExpect(jsonPath("$[0].name").exists());
+    }
+
+    @Test
+    public void getExistingProductById_returnsOk() throws Exception {
         mockMvc.perform(get("/api/products/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.product_id").value(1))
                 .andExpect(jsonPath("$.name").value("ASUS Prime Radeon RX 9070 XT Graphics Card"));
+    }
 
-
-        // Test non-existing product (ID 9999)
+    @Test
+    public void getNonExistingProductById_returnsEmpty() throws Exception {
         mockMvc.perform(get("/api/products/9999"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(""));
+    }
+
+    @Test
+    public void searchProducts_returnsOkAndArray() throws Exception {
+        mockMvc.perform(get("/api/products/search").param("q", "ASUS"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray());
+    }
+
+    @Test
+    public void searchProducts_noMatch_returnsEmptyArray() throws Exception {
+        mockMvc.perform(get("/api/products/search").param("q", "NonExistentProduct"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(0));
     }
 }

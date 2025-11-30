@@ -58,12 +58,12 @@ class ProductControllerTest {
 
     @Test
     void searchProducts_forwardsQuery() throws Exception {
-        when(hystrixProductService.searchProducts("needle"))
+        when(hystrixProductService.searchProducts("ASUS Prime Radeon RX 9070 XT Graphics Card"))
                 .thenReturn(List.of());
 
-        mockMvc.perform(get("/api/products/search").param("q", "needle"))
+        mockMvc.perform(get("/api/products/search").param("q", "ASUS Prime Radeon RX 9070 XT Graphics Card"))
                 .andExpect(status().isOk());
 
-        verify(hystrixProductService).searchProducts("needle");
+        verify(hystrixProductService).searchProducts("ASUS Prime Radeon RX 9070 XT Graphics Card");
     }
 }

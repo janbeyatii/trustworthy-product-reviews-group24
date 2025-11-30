@@ -35,19 +35,14 @@ class UserControllerTest {
         UsernamePasswordAuthenticationToken auth =
                 new UsernamePasswordAuthenticationToken(user, null, List.of());
         SecurityContextHolder.getContext().setAuthentication(auth);
-        System.out.println("Authenticated as: " + user.getEmail());
     }
 
     @Test
     void whoAmI_test() {
-        System.out.println("Running whoAmI test");
-
         SupabaseUser user = new SupabaseUser("1", "test@mail.com", Map.of());
         mockAuth(user);
 
         ResponseEntity<?> res = userController.whoAmI();
-        System.out.println("Mock service (authenticated user) result: " + res.getBody());
-
         assertEquals(200, res.getStatusCodeValue());
         Map<?, ?> body = (Map<?, ?>) res.getBody();
         assertEquals("1", body.get("id"));
@@ -55,148 +50,138 @@ class UserControllerTest {
 
         // Unauthenticated
         SecurityContextHolder.clearContext();
-        System.out.println("Authentication cleared");
-
         ResponseEntity<?> unauthRes = userController.whoAmI();
-        System.out.println("Mock service (unauthenticated) result: " + unauthRes.getBody());
-
         assertEquals(401, unauthRes.getStatusCodeValue());
-        System.out.println("whoAmI test completed\n");
     }
 
     @Test
     void searchUsers_test() {
-        System.out.println("Running searchUsers test");
-
         SupabaseUser user = new SupabaseUser("50", "me@mail.com", Map.of());
         mockAuth(user);
 
         List<Map<String, Object>> mockUsers = List.of(Map.of("id", "11", "email", "a@mail.com"));
         when(hystrixUserService.searchUsers("a@mail.com")).thenReturn(mockUsers);
 
-        System.out.println("Query: 'a@mail.com'");
-        System.out.println("Mock service will return: " + mockUsers);
-
         ResponseEntity<?> res = userController.searchUsers("a@mail.com");
-        System.out.println("Result: " + res.getBody());
-
         assertEquals(200, res.getStatusCodeValue());
         assertEquals(mockUsers, res.getBody());
 
         // Empty query
         ResponseEntity<?> emptyRes = userController.searchUsers("   ");
-        System.out.println("Query: '   ' (empty)");
-        System.out.println("Result: " + emptyRes.getBody());
-
         assertEquals(200, emptyRes.getStatusCodeValue());
         assertTrue(((List<?>) emptyRes.getBody()).isEmpty());
 
         // Unauthenticated
         SecurityContextHolder.clearContext();
-        System.out.println("Authentication cleared");
-
         ResponseEntity<?> unauthRes = userController.searchUsers("x@mail.com");
-        System.out.println("Query: 'x@mail.com' (unauthenticated)");
-        System.out.println("Result: " + unauthRes.getBody());
-
         assertEquals(401, unauthRes.getStatusCodeValue());
-        System.out.println("searchUsers test completed\n");
     }
 
     @Test
     void getUserProfile_test() {
-        System.out.println("Running getUserProfile test");
-
         SupabaseUser user = new SupabaseUser("10", "auth@test.com", Map.of());
         mockAuth(user);
 
         Map<String, Object> mockUser = Map.of("id", "999", "email", "target@mail.com", "name", "Target User");
-        // Updated to mock getUserProfileWithMetrics instead of getUserById
         when(hystrixUserService.getUserProfileWithMetrics("999", "10")).thenReturn(mockUser);
 
-        System.out.println("Query: getUserProfile('999')");
-        System.out.println("Mock service will return: " + mockUser);
-
         ResponseEntity<?> res = userController.getUserProfile("999");
-        System.out.println("Result: " + res.getBody());
-
         assertEquals(200, res.getStatusCodeValue());
         assertEquals(mockUser, res.getBody());
 
         // Not found
         when(hystrixUserService.getUserProfileWithMetrics("200", "10")).thenReturn(null);
         ResponseEntity<?> notFoundRes = userController.getUserProfile("200");
-        System.out.println("Query: getUserProfile('200')");
-        System.out.println("Result: " + notFoundRes.getBody());
-
         assertEquals(404, notFoundRes.getStatusCodeValue());
 
-        // Unauthenticated - now allowed
+        // Unauthenticated allowed
         SecurityContextHolder.clearContext();
-        // Unauthenticated calls pass null as viewerId
         when(hystrixUserService.getUserProfileWithMetrics("777", null)).thenReturn(mockUser);
-        
         ResponseEntity<?> unauthRes = userController.getUserProfile("777");
-        System.out.println("Query: getUserProfile('777') (unauthenticated)");
-        System.out.println("Result: " + unauthRes.getBody());
-
         assertEquals(200, unauthRes.getStatusCodeValue());
         assertEquals(mockUser, unauthRes.getBody());
-        
-        System.out.println("getUserProfile test completed\n");
     }
 
     @Test
     void following_test() {
-        System.out.println("Running following test");
-
         SupabaseUser user = new SupabaseUser("500", "testf@mail.com", Map.of());
         mockAuth(user);
 
         List<Map<String, Object>> mockData = List.of(Map.of("email", "test1@mail.com"), Map.of("email", "test2@mail.com"));
         when(hystrixUserService.getFollowingForUser("500")).thenReturn(mockData);
 
-        System.out.println("Mock service will return: " + mockData);
-
         ResponseEntity<?> res = userController.getCurrentUserFollowing();
-        System.out.println("Result: " + res.getBody());
-
         assertEquals(200, res.getStatusCodeValue());
         assertEquals(mockData, res.getBody());
 
-        // Unauthenticated
         SecurityContextHolder.clearContext();
         ResponseEntity<?> unauthRes = userController.getCurrentUserFollowing();
-        System.out.println("Result (unauthenticated): " + unauthRes.getBody());
-
         assertEquals(401, unauthRes.getStatusCodeValue());
-        System.out.println("following test completed\n");
     }
 
     @Test
     void followers_test() {
-        System.out.println("Running followers test");
-
         SupabaseUser user = new SupabaseUser("600", "testf@mail.com", Map.of());
         mockAuth(user);
 
         List<Map<String, Object>> mockData = List.of(Map.of("email", "test1@mail.com"), Map.of("email", "test2@mail.com"));
         when(hystrixUserService.getFollowersForUser("600")).thenReturn(mockData);
 
-        System.out.println("Mock service will return: " + mockData);
-
         ResponseEntity<?> res = userController.getCurrentUserFollowers();
-        System.out.println("Result: " + res.getBody());
-
         assertEquals(200, res.getStatusCodeValue());
         assertEquals(mockData, res.getBody());
 
-        // Unauthenticated
         SecurityContextHolder.clearContext();
         ResponseEntity<?> unauthRes = userController.getCurrentUserFollowers();
-        System.out.println("Result (unauthenticated): " + unauthRes.getBody());
-
         assertEquals(401, unauthRes.getStatusCodeValue());
-        System.out.println("followers test completed\n");
+    }
+
+    @Test
+    void getSimilarUsers_test() {
+        SupabaseUser user = new SupabaseUser("1000", "sim@mail.com", Map.of());
+        mockAuth(user);
+
+        List<Map<String, Object>> mockSimilarUsers = List.of(
+                Map.of("id", "101", "email", "u1@mail.com", "similarity", 0.9),
+                Map.of("id", "102", "email", "u2@mail.com", "similarity", 0.8)
+        );
+
+        when(hystrixUserService.findSimilarUsers("1000", 10, 0.1)).thenReturn(mockSimilarUsers);
+
+        ResponseEntity<?> res = userController.getSimilarUsers(10, 0.1);
+        assertEquals(200, res.getStatusCodeValue());
+        assertEquals(mockSimilarUsers, res.getBody());
+
+        // Invalid limit
+        ResponseEntity<?> invalidLimit = userController.getSimilarUsers(0, 0.1);
+        assertEquals(400, invalidLimit.getStatusCodeValue());
+
+        // Invalid minSimilarity
+        ResponseEntity<?> invalidSim = userController.getSimilarUsers(10, -0.5);
+        assertEquals(400, invalidSim.getStatusCodeValue());
+
+        // Unauthenticated
+        SecurityContextHolder.clearContext();
+        ResponseEntity<?> unauth = userController.getSimilarUsers(10, 0.1);
+        assertEquals(401, unauth.getStatusCodeValue());
+    }
+
+    @Test
+    void calculateSimilarity_test() {
+        SupabaseUser user = new SupabaseUser("2000", "calc@mail.com", Map.of());
+        mockAuth(user);
+
+        when(hystrixUserService.calculateCombinedJaccardSimilarity("2000", "3000")).thenReturn(0.756);
+
+        ResponseEntity<?> res = userController.calculateSimilarity("3000");
+        assertEquals(200, res.getStatusCodeValue());
+        Map<String, Object> body = (Map<String, Object>) res.getBody();
+        assertEquals("3000", body.get("user_id"));
+        assertEquals(0.756, body.get("similarity"));
+
+        // Unauthenticated
+        SecurityContextHolder.clearContext();
+        ResponseEntity<?> unauth = userController.calculateSimilarity("3000");
+        assertEquals(401, unauth.getStatusCodeValue());
     }
 }
