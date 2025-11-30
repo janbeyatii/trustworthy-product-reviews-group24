@@ -1,8 +1,8 @@
 package com.trustworthyreviews.controller;
 
+import com.trustworthyreviews.security.SupabaseJwtFilter;
 import com.trustworthyreviews.security.SupabaseJwtService;
 import com.trustworthyreviews.service.HystrixProductService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -24,104 +24,46 @@ class ProductControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+
     @MockBean
     private HystrixProductService hystrixProductService;
 
     @MockBean
     private SupabaseJwtService supabaseJwtService;
 
-    private List<Map<String, Object>> mockProducts;
+    @MockBean
+    private SupabaseJwtFilter supabaseJwtFilter;
 
-    @BeforeEach
-    void setUp() {
-        mockProducts = List.of(
-                Map.of("id", 1, "name", "Ryzen 7 5800x3d", "category", "cpu"),
-                Map.of("id", 2, "name", "Intel i9 13900k", "category", "cpu"),
-                Map.of("id", 3, "name", "RTX 4090", "category", "gpu")
-        );
-        log("Mock products initialized");
-    }
+    @Test
+    void getAllProducts_returnsOkAndJson() throws Exception {
+        when(hystrixProductService.getAllProducts())
+                .thenReturn(List.of(Map.of("product_id", 1, "name", "X")));
 
-    private void log(String msg) {
-        System.out.println(msg);
-    }
+        mockMvc.perform(get("/api/products"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name").value("X"));
 
-    private void logStart(String name) {
-        System.out.println("\nRunning " + name + " test");
-    }
-
-    private void logData(Object data) {
-        System.out.println("Mock service will return: " + data);
+        verify(hystrixProductService).getAllProducts();
     }
 
     @Test
-    void getAllProducts() throws Exception {
-        logStart("getAllProducts");
-        when(hystrixProductService.getAllProducts()).thenReturn(mockProducts);
-        logData(mockProducts);
+    void getProductById_returnsOne() throws Exception {
+        when(hystrixProductService.getProductById(1))
+                .thenReturn(Map.of("product_id", 1, "name", "X"));
 
-        var result = mockMvc.perform(get("/api/products"))
+        mockMvc.perform(get("/api/products/1"))
                 .andExpect(status().isOk())
-                .andReturn();
-
-        log("Result: " + result.getResponse().getContentAsString());
-        log("getAllProducts test completed");
-        verify(hystrixProductService, times(1)).getAllProducts();
+                .andExpect(jsonPath("$.product_id").value(1));
     }
 
     @Test
-    void getProductById() throws Exception {
-        Map<String, Object> product = Map.of("id", 1, "name", "Ryzen 7 5800x3d", "category", "cpu");
+    void searchProducts_forwardsQuery() throws Exception {
+        when(hystrixProductService.searchProducts("needle"))
+                .thenReturn(List.of());
 
-        logStart("getProductById");
-        when(hystrixProductService.getProductById(1)).thenReturn(product);
-        logData(product);
+        mockMvc.perform(get("/api/products/search").param("q", "needle"))
+                .andExpect(status().isOk());
 
-        var result = mockMvc.perform(get("/api/products/1"))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        log("Result: " + result.getResponse().getContentAsString());
-        log("getProductById test completed");
-        verify(hystrixProductService, times(1)).getProductById(1);
-    }
-
-    @Test
-    void searchProductsByCategory() throws Exception {
-        List<Map<String, Object>> searchResult = List.of(
-                Map.of("id", 1, "name", "Ryzen 7 5800x3d", "category", "cpu"),
-                Map.of("id", 2, "name", "Intel i9 13900k", "category", "cpu")
-        );
-
-        logStart("searchProductsByCategory");
-        when(hystrixProductService.searchProducts("cpu")).thenReturn(searchResult);
-        logData(searchResult);
-
-        var result = mockMvc.perform(get("/api/products/search").param("q", "cpu"))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        log("Result: " + result.getResponse().getContentAsString());
-        log("searchProductsByCategory test completed");
-        verify(hystrixProductService, times(1)).searchProducts("cpu");
-    }
-
-    @Test
-    void searchProductsByName() throws Exception {
-        List<Map<String, Object>> searchResult = List.of(
-                Map.of("id", 3, "name", "RTX 4090", "category", "gpu")
-        );
-
-        logStart("searchProductsByName");
-        when(hystrixProductService.searchProducts("RTX 4090")).thenReturn(searchResult);
-        logData(searchResult);
-
-        var result = mockMvc.perform(get("/api/products/search").param("q", "RTX 4090"))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        log("Result: " + result.getResponse().getContentAsString());
-        log("searchProductsByName test completed");
-        verify(hystrixProductService, times(1)).searchProducts("RTX 4090");
+        verify(hystrixProductService).searchProducts("needle");
     }
 }
