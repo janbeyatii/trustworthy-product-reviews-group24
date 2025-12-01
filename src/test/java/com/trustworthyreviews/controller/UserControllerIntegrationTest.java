@@ -1,17 +1,12 @@
 package com.trustworthyreviews.controller;
-import com.trustworthyreviews.TestSecurityConfig;
 
 
 import com.trustworthyreviews.security.SupabaseUser;
-import com.trustworthyreviews.service.UserService;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,19 +20,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
-@SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = "spring.profiles.active=test"
-)@AutoConfigureMockMvc
-@Import(TestSecurityConfig.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureMockMvc(addFilters = false)
 public class UserControllerIntegrationTest {
 
 
    @Autowired
    private MockMvc mockMvc;
-   
-   @MockBean
-    private UserService userService; 
 
 
    @AfterEach
