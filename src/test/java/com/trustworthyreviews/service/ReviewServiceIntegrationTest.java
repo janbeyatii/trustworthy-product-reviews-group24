@@ -49,7 +49,8 @@ class ReviewServiceIntegrationTest {
            CREATE TABLE IF NOT EXISTS users (
                id VARCHAR(36) PRIMARY KEY,
                email VARCHAR(255),
-               display_name VARCHAR(255)
+               display_name VARCHAR(255),
+               raw_user_meta_data VARCHAR(255)
            )
        """);
 
