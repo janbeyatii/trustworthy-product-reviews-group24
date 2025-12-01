@@ -1,4 +1,5 @@
 package com.trustworthyreviews.controller;
+import com.trustworthyreviews.TestSecurityConfig;
 
 import com.trustworthyreviews.security.SupabaseUser;
 import org.junit.jupiter.api.AfterEach;
@@ -6,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,7 +19,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureMockMvc(addFilters = false)  // disable Spring Security filters for integration tests
+@AutoConfigureMockMvc(addFilters = false)
+@Import(TestSecurityConfig.class)
 public class UserControllerIntegrationTest {
 
     @Autowired
