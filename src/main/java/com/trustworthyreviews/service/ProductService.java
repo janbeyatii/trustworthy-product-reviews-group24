@@ -40,13 +40,13 @@ public class ProductService {
         
         String sql = """
             SELECT 
-                product_id,
-                name,
-                avg_rating,
-                description,
-                image,
-                link,
-                category
+                product_id AS "product_id",
+                name AS "name",
+                avg_rating AS "avg_rating",
+                description AS "description",
+                image AS "image",
+                link AS "link",
+                category AS "category"
             FROM products
             ORDER BY name
         """;
@@ -59,13 +59,13 @@ public class ProductService {
     public Map<String, Object> getProductById(int productId) {
         String sql = """
             SELECT 
-                product_id,
-                name,
-                avg_rating,
-                description,
-                image,
-                link,
-                category
+                product_id AS "product_id",
+                name AS "name",
+                avg_rating AS "avg_rating",
+                description AS "description",
+                image AS "image",
+                link AS "link",
+                category AS "category"
             FROM products
             WHERE product_id = ?
         """;
@@ -80,13 +80,13 @@ public class ProductService {
     public List<Map<String, Object>> searchProducts(String query) {
         String sql = """
             SELECT 
-                product_id,
-                name,
-                avg_rating,
-                description,
-                image,
-                link,
-                category
+                product_id AS "product_id",
+                name AS "name",
+                avg_rating AS "avg_rating",
+                description AS "description",
+                image AS "image",
+                link AS "link",
+                category AS "category"
             FROM products
             WHERE name ILIKE ? OR category ILIKE ?
             ORDER BY name
@@ -99,13 +99,13 @@ public class ProductService {
     public List<Map<String, Object>> getProductsFiltered(String category, String userId, boolean onlyFollowing) {
         StringBuilder sql = new StringBuilder("""
             SELECT DISTINCT
-                p.product_id,
-                p.name,
-                p.avg_rating,
-                p.description,
-                p.image,
-                p.link,
-                p.category
+                p.product_id AS "product_id",
+                p.name AS "name",
+                p.avg_rating AS "avg_rating",
+                p.description AS "description",
+                p.image AS "image",
+                p.link AS "link",
+                p.category AS "category"
             FROM products p
         """);
 
