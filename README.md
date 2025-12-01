@@ -207,8 +207,8 @@ Returns the Jaccard similarity score between you and another user.
 
 ## Data Base Schema 
 
-<img width="803" height="771" alt="Screenshot 2025-11-17 132024" src="https://github.com/user-attachments/assets/69bb4a9f-866f-4c33-ad56-b4ae6c867a4c" />
+<img width="1276" height="1342" alt="image" src="https://github.com/user-attachments/assets/0e466be4-42fa-4c22-a858-adbbb5e10431" />
 
 ## UML diagram
 
-<img width="3200" height="6080" alt="ProjectUml" src="https://github.com/user-attachments/assets/ecd6361d-82ea-4abc-b3bd-c371e77f9d2c" />
+<img width="7570" height="6644" alt="image" src="https://github.com/user-attachments/assets/de8abb86-f794-4c1c-bbef-60ad4b30cf30" />
