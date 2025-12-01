@@ -95,4 +95,7 @@ public class ProductService {
         String pattern = "%" + query + "%";
         return jdbcTemplate.queryForList(sql, pattern, pattern);
     }
+    void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 }

@@ -235,5 +235,12 @@ public class ReviewService {
             review.remove("raw_user_meta_data");
         });
     }
+    void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
+    void setUserService(UserService userService) {
+        this.userService = userService;
+    }
 }
 
