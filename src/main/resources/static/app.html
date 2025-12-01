@@ -86,9 +86,23 @@
         </article>
     </section>
     <section class="dashboard__content">
-    <div id="products-container" class="products-container">
-    </div>
-</section>
+        <div class="product-filters">
+            <div class="filter-group">
+                <label for="category-filter">Category:</label>
+                <select id="category-filter" class="filter-select">
+                    <option value="all">All Categories</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-checkbox-label">
+                    <input type="checkbox" id="following-filter" class="filter-checkbox">
+                    <span>Only from users I follow</span>
+                </label>
+            </div>
+        </div>
+        <div id="products-container" class="products-container">
+        </div>
+    </section>
 </main>
 <div class="modal" id="display-name-modal">
     <div class="modal__content">

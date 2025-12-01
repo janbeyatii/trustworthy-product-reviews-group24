@@ -95,4 +95,66 @@ public class ProductService {
         String pattern = "%" + query + "%";
         return jdbcTemplate.queryForList(sql, pattern, pattern);
     }
+
+    public List<Map<String, Object>> getProductsFiltered(String category, String userId, boolean onlyFollowing) {
+        StringBuilder sql = new StringBuilder("""
+            SELECT DISTINCT
+                p.product_id,
+                p.name,
+                p.avg_rating,
+                p.description,
+                p.image,
+                p.link,
+                p.category
+            FROM products p
+        """);
+
+        // If filtering by following, join with reviews and relations
+        if (onlyFollowing && userId != null) {
+            sql.append("""
+                INNER JOIN product_reviews pr ON p.product_id = pr.product_id
+                INNER JOIN relations r ON pr.uid = r.following
+                WHERE r.uid = ?::uuid
+            """);
+        } else {
+            sql.append(" WHERE 1=1 ");
+        }
+
+        // Add category filter if provided
+        if (category != null && !category.isEmpty() && !"all".equalsIgnoreCase(category)) {
+            if (onlyFollowing && userId != null) {
+                sql.append(" AND p.category = ? ");
+            } else {
+                sql.append(" AND p.category = ? ");
+            }
+        }
+
+        // Order by average rating descending, then by name
+        sql.append(" ORDER BY p.avg_rating DESC NULLS LAST, p.name");
+
+        // Build parameters list
+        java.util.List<Object> params = new java.util.ArrayList<>();
+        if (onlyFollowing && userId != null) {
+            params.add(userId);
+        }
+        if (category != null && !category.isEmpty() && !"all".equalsIgnoreCase(category)) {
+            params.add(category);
+        }
+
+        return jdbcTemplate.queryForList(sql.toString(), params.toArray());
+    }
+
+    /**
+     * Get all distinct categories
+     */
+    public List<String> getAllCategories() {
+        String sql = """
+            SELECT DISTINCT category
+            FROM products
+            WHERE category IS NOT NULL
+            ORDER BY category
+        """;
+        
+        return jdbcTemplate.queryForList(sql, String.class);
+    }
 }

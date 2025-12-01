@@ -145,10 +145,24 @@ const renderProducts = (products) => {
     });
 };
 
-const fetchAndDisplayProducts = async () => {
+const fetchAndDisplayProducts = async (category = null, onlyFollowing = false) => {
     try {
         const baseUrl = window.__API_BASE_URL__ ?? window.location.origin;
-        const response = await fetch(`${baseUrl}/api/products`);
+        
+        const params = new URLSearchParams();
+        if (category && category !== 'all') {
+            params.append('category', category);
+        }
+        if (onlyFollowing) {
+            params.append('onlyFollowing', 'true');
+        }
+        
+        const url = `${baseUrl}/api/products${params.toString() ? '?' + params.toString() : ''}`;
+        
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        const headers = session ? { 'Authorization': `Bearer ${session.access_token}` } : {};
+        
+        const response = await fetch(url, { headers });
         if (!response.ok) throw new Error('Failed to fetch products');
         const products = await response.json();
 
@@ -161,6 +175,27 @@ const fetchAndDisplayProducts = async () => {
         if (productsContainer) {
             productsContainer.innerHTML = '<p class="error">Failed to load products.</p>';
         }
+    }
+};
+
+const loadCategories = async () => {
+    try {
+        const baseUrl = window.__API_BASE_URL__ ?? window.location.origin;
+        const response = await fetch(`${baseUrl}/api/products/categories`);
+        if (!response.ok) throw new Error('Failed to fetch categories');
+        const categories = await response.json();
+        
+        const categoryFilter = document.getElementById('category-filter');
+        if (categoryFilter) {
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categoryFilter.appendChild(option);
+            });
+        }
+    } catch (err) {
+        console.error('Error fetching categories:', err);
     }
 };
 
@@ -273,7 +308,21 @@ const initialiseAppPage = async () => {
         await supabaseClient.auth.signOut();
         window.location.replace('index.html');
     });
-        await fetchAndDisplayProducts();
+
+    await loadCategories();
+    await fetchAndDisplayProducts();
+
+    const categoryFilter = document.getElementById('category-filter');
+    const followingFilter = document.getElementById('following-filter');
+
+    const applyFilters = () => {
+        const category = categoryFilter?.value || 'all';
+        const onlyFollowing = followingFilter?.checked || false;
+        fetchAndDisplayProducts(category, onlyFollowing);
+    };
+
+    categoryFilter?.addEventListener('change', applyFilters);
+    followingFilter?.addEventListener('change', applyFilters);
 };
 
 if (document.body?.dataset?.page === 'app') {
