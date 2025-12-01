@@ -232,7 +232,7 @@ public class UserControllerIntegrationTest {
        SecurityContextHolder.clearContext();
 
 
-       mockMvc.perform(get("/api/users/similarity/some-user-id")
+       mockMvc.perform(get("/api/users/similarity/00000000-0000-0000-0000-000000000001")
                        .accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isUnauthorized());
    }
@@ -247,7 +247,7 @@ public class UserControllerIntegrationTest {
        );
 
 
-       mockMvc.perform(get("/api/users/similarity/another-user-id")
+       mockMvc.perform(get("/api/users/similarity/00000000-0000-0000-0000-000000000002")
                        .accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isOk());
    }
@@ -262,7 +262,7 @@ public class UserControllerIntegrationTest {
        );
 
 
-       mockMvc.perform(get("/api/users/similarity/another-user-id")
+       mockMvc.perform(get("/api/users/similarity/00000000-0000-0000-0000-000000000002")
                        .accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isOk());
    }
