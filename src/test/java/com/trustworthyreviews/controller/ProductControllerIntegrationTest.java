@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -18,7 +19,8 @@ public class ProductControllerIntegrationTest {
 
     @Test
     public void getAllProducts_returnsOkAndNonEmpty() throws Exception {
-        mockMvc.perform(get("/api/products"))
+        mockMvc.perform(get("/api/products")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$[0].product_id").exists())
@@ -27,7 +29,8 @@ public class ProductControllerIntegrationTest {
 
     @Test
     public void getExistingProductById_returnsOk() throws Exception {
-        mockMvc.perform(get("/api/products/1"))
+        mockMvc.perform(get("/api/products/1")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.product_id").value(1))
                 .andExpect(jsonPath("$.name").value("ASUS Prime Radeon RX 9070 XT Graphics Card"));
@@ -35,21 +38,26 @@ public class ProductControllerIntegrationTest {
 
     @Test
     public void getNonExistingProductById_returnsEmpty() throws Exception {
-        mockMvc.perform(get("/api/products/9999"))
+        mockMvc.perform(get("/api/products/9999")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().string(""));
     }
 
     @Test
     public void searchProducts_returnsOkAndArray() throws Exception {
-        mockMvc.perform(get("/api/products/search").param("q", "ASUS"))
+        mockMvc.perform(get("/api/products/search")
+                        .param("q", "ASUS")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
     }
 
     @Test
     public void searchProducts_noMatch_returnsEmptyArray() throws Exception {
-        mockMvc.perform(get("/api/products/search").param("q", "NonExistentProduct"))
+        mockMvc.perform(get("/api/products/search")
+                        .param("q", "NonExistentProduct")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(0));

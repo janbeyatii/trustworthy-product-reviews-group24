@@ -1,3 +1,4 @@
+// ================= ProductServiceIntegrationTest =================
 package com.trustworthyreviews.service;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +27,6 @@ class ProductServiceIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        // Create table if it does not exist
         jdbcTemplate.execute("""
             CREATE TABLE IF NOT EXISTS PRODUCTS (
                 PRODUCT_ID INT PRIMARY KEY,
@@ -39,10 +39,8 @@ class ProductServiceIntegrationTest {
             )
         """);
 
-        // Clear table before each test
         jdbcTemplate.update("DELETE FROM PRODUCTS");
 
-        // Seed database with one product
         jdbcTemplate.update("""
             INSERT INTO PRODUCTS (PRODUCT_ID, NAME, AVG_RATING, DESCRIPTION, IMAGE, LINK, CATEGORY)
             VALUES (?, ?, ?, ?, ?, ?, ?)

@@ -1,3 +1,4 @@
+// ================= ReviewServiceIntegrationTest =================
 package com.trustworthyreviews.service;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -29,7 +30,6 @@ class ReviewServiceIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        // Create tables
         jdbcTemplate.execute("""
             CREATE TABLE IF NOT EXISTS products (
                 product_id INT PRIMARY KEY,
@@ -57,12 +57,10 @@ class ReviewServiceIntegrationTest {
             )
         """);
 
-        // Clear tables
         jdbcTemplate.update("DELETE FROM product_reviews");
         jdbcTemplate.update("DELETE FROM products");
         jdbcTemplate.update("DELETE FROM users");
 
-        // Seed sample data
         jdbcTemplate.update("INSERT INTO products (product_id, name, avg_rating) VALUES (?, ?, ?)",
                 1, "Test GPU", 0.0);
         jdbcTemplate.update("INSERT INTO users (id, email, display_name) VALUES (?, ?, ?)",
@@ -80,7 +78,6 @@ class ReviewServiceIntegrationTest {
         assertNotNull(result.get("review_id"));
         assertEquals("Review added successfully", result.get("message"));
 
-        // Verify review exists
         List<Map<String, Object>> reviews = jdbcTemplate.queryForList(
                 "SELECT * FROM product_reviews WHERE product_id = ?", 1
         );
@@ -104,7 +101,6 @@ class ReviewServiceIntegrationTest {
         reviewService.addReview(1, "00000000-0000-0000-0000-000000000001", 5, "Amazing!");
         reviewService.addReview(1, "00000000-0000-0000-0000-000000000002", 4, "Good");
 
-        // Fetch reviews and join with users to get display_name
         List<Map<String, Object>> reviews = jdbcTemplate.queryForList(
                 "SELECT r.review_id, r.product_id, r.review_rating, r.review_desc, r.uid, u.email, u.display_name " +
                         "FROM product_reviews r " +
@@ -113,10 +109,9 @@ class ReviewServiceIntegrationTest {
         );
 
         assertEquals(2, reviews.size());
-
         for (Map<String, Object> review : reviews) {
             assertNotNull(review.get("email"));
-            assertNotNull(review.get("display_name")); // guaranteed to exist
+            assertNotNull(review.get("display_name"));
         }
     }
 

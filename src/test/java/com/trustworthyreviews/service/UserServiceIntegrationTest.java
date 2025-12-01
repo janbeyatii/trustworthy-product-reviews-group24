@@ -29,31 +29,27 @@ class UserServiceIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        // Initialize UserService with null SupabaseProperties
         userService = new UserService(jdbcTemplate, null, objectMapper);
 
-        // Create users table
         jdbcTemplate.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id UUID PRIMARY KEY,
-                email VARCHAR(255) NOT NULL,
-                raw_user_meta_data VARCHAR(255)
-            )
+          CREATE TABLE IF NOT EXISTS users (
+            id VARCHAR(36) PRIMARY KEY,
+            email VARCHAR(255) NOT NULL,
+            display_name VARCHAR(255),
+            raw_user_meta_data VARCHAR(255))
         """);
 
-        // Create relations table
         jdbcTemplate.execute("""
             CREATE TABLE IF NOT EXISTS relations (
-                uid UUID NOT NULL,
-                following UUID NOT NULL
+                uid VARCHAR(36) NOT NULL,
+                following VARCHAR(36) NOT NULL
             )
         """);
 
-        // Create similarity cache table
         jdbcTemplate.execute("""
             CREATE TABLE IF NOT EXISTS user_similarity_cache (
-                uuid1 UUID NOT NULL,
-                uuid2 UUID NOT NULL,
+                uuid1 VARCHAR(36) NOT NULL,
+                uuid2 VARCHAR(36) NOT NULL,
                 similarity_score DOUBLE,
                 product_similarity DOUBLE,
                 rating_similarity DOUBLE,
@@ -62,30 +58,24 @@ class UserServiceIntegrationTest {
             )
         """);
 
-        // Clear tables
         jdbcTemplate.update("DELETE FROM relations");
         jdbcTemplate.update("DELETE FROM users");
         jdbcTemplate.update("DELETE FROM user_similarity_cache");
 
-        // Seed users
         jdbcTemplate.update("""
             INSERT INTO users (id, email, raw_user_meta_data) VALUES 
             ('00000000-0000-0000-0000-000000000001','alice@example.com','{\"display_name\":\"Alice\"}'),
             ('00000000-0000-0000-0000-000000000002','bob@example.com','{\"display_name\":\"Bob\"}')
         """);
 
-        // Seed relations: Alice follows Bob
         jdbcTemplate.update("""
             INSERT INTO relations (uid, following) VALUES 
             ('00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000002')
         """);
     }
 
-    // --------------------- Tests ---------------------
-
     @Test
     void getUserById_existingUser_returnsUser() {
-        // Override queryUserById for H2: query users table directly
         Map<String, Object> user = jdbcTemplate.queryForMap(
                 "SELECT * FROM users WHERE id = ?", "00000000-0000-0000-0000-000000000001"
         );
@@ -121,7 +111,6 @@ class UserServiceIntegrationTest {
 
     @Test
     void getDegreeOfSeparation_directFollow_returns1() {
-        // Simple degree calculation using relations table
         List<Map<String, Object>> directFollow = jdbcTemplate.queryForList("""
             SELECT 1 as degree FROM relations
             WHERE uid = ? AND following = ?
@@ -134,7 +123,6 @@ class UserServiceIntegrationTest {
 
     @Test
     void getUserProfileWithMetrics_includesMetrics() {
-        // Fetch target user directly from users table
         Map<String, Object> profile = jdbcTemplate.queryForMap("""
             SELECT * FROM users WHERE id = ?
         """, "00000000-0000-0000-0000-000000000002");
