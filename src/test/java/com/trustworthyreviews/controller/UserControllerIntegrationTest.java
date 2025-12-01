@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = "spring.profiles.active=test"
-)@AutoConfigureMockMvc(addFilters = false)
+)@AutoConfigureMockMvc
 @Import(TestSecurityConfig.class)
 public class UserControllerIntegrationTest {
 
