@@ -66,6 +66,13 @@ public class HystrixUserService {
         return new GetUserProfileWithMetricsCommand(targetUserId, viewerUserId, userService).execute();
     }
 
+    /**
+     * Get most followed users with circuit breaker protection
+     */
+    public List<Map<String, Object>> getMostFollowedUsers(int limit) {
+        return new GetMostFollowedUsersCommand(limit, userService).execute();
+    }
+
     // Hystrix Commands
     
     private static class SearchUsersCommand extends HystrixCommand<List<Map<String, Object>>> {
@@ -284,6 +291,36 @@ public class HystrixUserService {
             log.warn("GetUserProfileWithMetrics circuit breaker opened or timed out. Returning basic profile.");
             // Fallback: try to get just the user profile without metrics
             return userService.getUserById(targetUserId);
+        }
+    }
+
+    private static class GetMostFollowedUsersCommand extends HystrixCommand<List<Map<String, Object>>> {
+        private final int limit;
+        private final UserService userService;
+
+        protected GetMostFollowedUsersCommand(int limit, UserService userService) {
+            super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey("Database"))
+                    .andCommandKey(HystrixCommandKey.Factory.asKey("GetMostFollowedUsers"))
+                    .andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
+                            .withCircuitBreakerEnabled(true)
+                            .withCircuitBreakerRequestVolumeThreshold(10)
+                            .withCircuitBreakerErrorThresholdPercentage(50)
+                            .withCircuitBreakerSleepWindowInMilliseconds(5000)
+                            .withExecutionTimeoutInMilliseconds(3000)
+                            .withFallbackEnabled(true)));
+            this.limit = limit;
+            this.userService = userService;
+        }
+
+        @Override
+        protected List<Map<String, Object>> run() throws Exception {
+            return userService.getMostFollowedUsers(limit);
+        }
+
+        @Override
+        protected List<Map<String, Object>> getFallback() {
+            log.warn("GetMostFollowedUsers circuit breaker opened or timed out. Returning empty list.");
+            return Collections.emptyList();
         }
     }
 }

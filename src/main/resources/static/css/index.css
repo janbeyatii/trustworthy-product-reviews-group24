@@ -524,7 +524,6 @@ p {
     box-shadow: var(--shadow);
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
 }
 
 .panel__form {
@@ -719,6 +718,37 @@ p {
 /* Profile Section */
 .profile-section {
     margin-top: 1.25rem;
+}
+
+.panel-header-toggle {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.panel-toggle-btn {
+    flex: 1;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: rgba(30, 41, 59, 0.5);
+    color: var(--muted);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.panel-toggle-btn:hover {
+    background: rgba(30, 41, 59, 0.8);
+    color: var(--text);
+}
+
+.panel-toggle-btn.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+    color: #0b1120;
 }
 
 .profile-tabs {

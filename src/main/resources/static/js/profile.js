@@ -29,6 +29,30 @@ export async function initializeProfileSection() {
     similarUsersTab?.addEventListener('click', () => switchTab('similar', similarUsersTab));
     searchUsersTab?.addEventListener('click', () => switchTab('search', searchUsersTab));
 
+    // Panel view toggle
+    const profileViewBtn = document.getElementById('profile-view-btn');
+    const mostFollowedViewBtn = document.getElementById('most-followed-view-btn');
+    const profileView = document.getElementById('profile-view');
+    const mostFollowedView = document.getElementById('most-followed-view');
+
+    profileViewBtn?.addEventListener('click', () => {
+        profileViewBtn.classList.add('active');
+        mostFollowedViewBtn.classList.remove('active');
+        profileView.classList.remove('hidden');
+        mostFollowedView.classList.add('hidden');
+    });
+
+    mostFollowedViewBtn?.addEventListener('click', () => {
+        mostFollowedViewBtn.classList.add('active');
+        profileViewBtn.classList.remove('active');
+        mostFollowedView.classList.remove('hidden');
+        profileView.classList.add('hidden');
+        // Load most followed when switching to this view if not already loaded
+        if (mostFollowedView.querySelector('.profile-list').children.length === 0) {
+            loadMostFollowed();
+        }
+    });
+
     // Load initial data
     await loadFollowing();
     
@@ -424,6 +448,43 @@ async function loadSimilarUsers() {
     }
 }
 
+async function loadMostFollowed() {
+    const mostFollowedList = document.getElementById('most-followed-list');
+    if (!mostFollowedList) return;
+
+    try {
+        mostFollowedList.innerHTML = '<div class="empty-state">Loading most followed users...</div>';
+
+        const response = await fetch(`/api/users/most-followed?limit=10`);
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `Failed to load most followed users (status ${response.status})`);
+        }
+
+        const users = await response.json();
+        
+        mostFollowedList.innerHTML = '';
+        
+        if (!users || users.length === 0) {
+            mostFollowedList.innerHTML = `
+                <div class="empty-state">
+                    <p>No popular users found yet.</p>
+                </div>
+            `;
+            return;
+        }
+
+        for (const user of users) {
+            const userItem = createMostFollowedUserItem(user);
+            mostFollowedList.appendChild(userItem);
+        }
+    } catch (error) {
+        console.error('Error loading most followed users:', error);
+        mostFollowedList.innerHTML = `<div class="empty-state">Error: ${error.message || 'Failed to load most followed users'}</div>`;
+    }
+}
+
 function createSimilarUserItem(user) {
     const item = document.createElement('div');
     item.className = 'profile-item similar-user-item';
@@ -453,6 +514,38 @@ function createSimilarUserItem(user) {
                 <div class="similarity-details" style="display: flex; gap: 1rem; margin-top: 0.5rem; font-size: 0.8rem; color: var(--muted);">
                     <span title="Overall similarity">${similarity}% overall match (${productSim}% product match, ${ratingSim}% rating match)</span>
                 </div>
+            </div>
+        </div>
+        <button class="button profile-action-btn">View</button>
+    `;
+
+    const infoDiv = item.querySelector('.profile-item-info');
+    const viewButton = item.querySelector('button');
+
+    const viewProfile = async () => {
+        window.location.href = `/user.html?id=${user.id}`;
+    };
+
+    infoDiv.addEventListener('click', viewProfile);
+    viewButton.addEventListener('click', viewProfile);
+
+    return item;
+}
+
+function createMostFollowedUserItem(user) {
+    const item = document.createElement('div');
+    item.className = 'profile-item';
+    
+    const email = user.email || 'Email unavailable';
+    const displayName = user.display_name;
+    const followerCount = user.follower_count || 0;
+
+    item.innerHTML = `
+        <div class="profile-item-info" data-user-id="${user.id}">
+            <div class="profile-item-name">${escapeHtml(email)}</div>
+            ${displayName ? `<div class="profile-item-email">${escapeHtml(displayName)}</div>` : ''}
+            <div class="follower-count" style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--muted);">
+                <span>👥 ${followerCount} follower${followerCount !== 1 ? 's' : ''}</span>
             </div>
         </div>
         <button class="button profile-action-btn">View</button>

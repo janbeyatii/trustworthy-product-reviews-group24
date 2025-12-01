@@ -153,4 +153,18 @@ public class UserController {
             return ResponseEntity.status(500).body(Map.of("message", "Error calculating similarity: " + e.getMessage()));
         }
     }
+
+    @GetMapping("/users/most-followed")
+    public ResponseEntity<?> getMostFollowedUsers(@RequestParam(defaultValue = "10") int limit) {
+        if (limit < 1 || limit > 50) {
+            return ResponseEntity.status(400).body(Map.of("message", "Limit must be between 1 and 50"));
+        }
+
+        try {
+            List<Map<String, Object>> mostFollowed = hystrixUserService.getMostFollowedUsers(limit);
+            return ResponseEntity.ok(mostFollowed);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("message", "Error fetching most followed users: " + e.getMessage()));
+        }
+    }
 }
