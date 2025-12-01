@@ -36,37 +36,6 @@ class ReviewServiceIntegrationTest {
 
    @BeforeEach
    void setUp() {
-       jdbcTemplate.execute("""
-           CREATE TABLE IF NOT EXISTS products (
-               product_id INT PRIMARY KEY,
-               name VARCHAR(255),
-               avg_rating DOUBLE
-           )
-       """);
-
-
-       jdbcTemplate.execute("""
-           CREATE TABLE IF NOT EXISTS users (
-               id VARCHAR(36) PRIMARY KEY,
-               email VARCHAR(255),
-               display_name VARCHAR(255),
-               raw_user_meta_data VARCHAR(255)
-           )
-       """);
-
-
-       jdbcTemplate.execute("""
-           CREATE TABLE IF NOT EXISTS product_reviews (
-               review_id INT AUTO_INCREMENT PRIMARY KEY,
-               product_id INT,
-               review_rating INT,
-               review_desc VARCHAR(255),
-               uid VARCHAR(36),
-               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-           )
-       """);
-
-
        jdbcTemplate.update("DELETE FROM product_reviews");
        jdbcTemplate.update("DELETE FROM products");
        jdbcTemplate.update("DELETE FROM users");

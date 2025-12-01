@@ -14,12 +14,26 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
+@org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 public class ProductControllerIntegrationTest {
 
 
    @Autowired
    private MockMvc mockMvc;
 
+   @Autowired
+   private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
+   @org.junit.jupiter.api.BeforeEach
+   void setUp() {
+       jdbcTemplate.update("DELETE FROM product_reviews");
+       jdbcTemplate.update("DELETE FROM products");
+       
+       jdbcTemplate.update("""
+           INSERT INTO products (product_id, name, avg_rating, description, image, link, category)
+           VALUES (1, 'ASUS Prime Radeon RX 9070 XT Graphics Card', 5.0, 'High performance GPU', 'gpu.jpg', 'http://example.com', 'Graphics Card')
+       """);
+   }
 
    @Test
    public void getAllProducts_returnsOkAndNonEmpty() throws Exception {

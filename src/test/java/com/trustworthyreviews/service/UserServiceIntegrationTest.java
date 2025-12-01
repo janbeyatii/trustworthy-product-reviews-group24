@@ -39,37 +39,6 @@ class UserServiceIntegrationTest {
    void setUp() {
        userService = new UserService(jdbcTemplate, null, objectMapper);
 
-
-       jdbcTemplate.execute("""
-         CREATE TABLE IF NOT EXISTS users (
-           id VARCHAR(36) PRIMARY KEY,
-           email VARCHAR(255) NOT NULL,
-           display_name VARCHAR(255),
-           raw_user_meta_data VARCHAR(255))
-       """);
-
-
-       jdbcTemplate.execute("""
-           CREATE TABLE IF NOT EXISTS relations (
-               uid VARCHAR(36) NOT NULL,
-               following VARCHAR(36) NOT NULL
-           )
-       """);
-
-
-       jdbcTemplate.execute("""
-           CREATE TABLE IF NOT EXISTS user_similarity_cache (
-               uuid1 VARCHAR(36) NOT NULL,
-               uuid2 VARCHAR(36) NOT NULL,
-               similarity_score DOUBLE,
-               product_similarity DOUBLE,
-               rating_similarity DOUBLE,
-               last_calculated TIMESTAMP,
-               PRIMARY KEY (uuid1, uuid2)
-           )
-       """);
-
-
        jdbcTemplate.update("DELETE FROM relations");
        jdbcTemplate.update("DELETE FROM users");
        jdbcTemplate.update("DELETE FROM user_similarity_cache");
