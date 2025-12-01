@@ -553,5 +553,37 @@ public class UserService {
         
         return userProfile;
     }
+
+    /**
+     * Get the most followed users.
+     * 
+     * @param limit Maximum number of users to return
+     * @return List of users ordered by follower count (descending)
+     */
+    public List<Map<String, Object>> getMostFollowedUsers(int limit) {
+        try {
+            String sql = """
+                SELECT 
+                    u.id,
+                    u.email,
+                    u.raw_user_meta_data,
+                    COUNT(r.uid) as follower_count
+                FROM auth.users u
+                LEFT JOIN public.relations r ON r.following = u.id::uuid
+                GROUP BY u.id, u.email, u.raw_user_meta_data
+                HAVING COUNT(r.uid) > 0
+                ORDER BY follower_count DESC
+                LIMIT ?
+            """;
+            
+            List<Map<String, Object>> users = jdbcTemplate.queryForList(sql, limit);
+            enrichUserMetadata(users);
+            
+            return users;
+        } catch (Exception e) {
+            log.error("Error fetching most followed users: {}", e.getMessage(), e);
+            throw new RuntimeException("Error fetching most followed users: " + e.getMessage(), e);
+        }
+    }
 }
 

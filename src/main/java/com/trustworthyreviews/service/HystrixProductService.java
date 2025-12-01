@@ -47,6 +47,20 @@ public class HystrixProductService {
         return new SearchProductsCommand(query, productService).execute();
     }
 
+    /**
+     * Get products with filters with circuit breaker protection
+     */
+    public List<Map<String, Object>> getProductsFiltered(String category, String userId, boolean onlyFollowing) {
+        return new GetProductsFilteredCommand(category, userId, onlyFollowing, productService).execute();
+    }
+
+    /**
+     * Get all categories with circuit breaker protection
+     */
+    public List<String> getAllCategories() {
+        return new GetAllCategoriesCommand(productService).execute();
+    }
+
     // Hystrix Commands
 
     private static class GetAllProductsCommand extends HystrixCommand<List<Map<String, Object>>> {
@@ -133,6 +147,68 @@ public class HystrixProductService {
         @Override
         protected List<Map<String, Object>> getFallback() {
             log.warn("SearchProducts circuit breaker opened or timed out for query '{}'. Returning empty list.", query);
+            return Collections.emptyList();
+        }
+    }
+
+    private static class GetProductsFilteredCommand extends HystrixCommand<List<Map<String, Object>>> {
+        private final String category;
+        private final String userId;
+        private final boolean onlyFollowing;
+        private final ProductService productService;
+
+        protected GetProductsFilteredCommand(String category, String userId, boolean onlyFollowing, ProductService productService) {
+            super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey("Database"))
+                    .andCommandKey(HystrixCommandKey.Factory.asKey("GetProductsFiltered"))
+                    .andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
+                            .withCircuitBreakerEnabled(true)
+                            .withCircuitBreakerRequestVolumeThreshold(10)
+                            .withCircuitBreakerErrorThresholdPercentage(50)
+                            .withCircuitBreakerSleepWindowInMilliseconds(5000)
+                            .withExecutionTimeoutInMilliseconds(3000)
+                            .withFallbackEnabled(true)));
+            this.category = category;
+            this.userId = userId;
+            this.onlyFollowing = onlyFollowing;
+            this.productService = productService;
+        }
+
+        @Override
+        protected List<Map<String, Object>> run() throws Exception {
+            return productService.getProductsFiltered(category, userId, onlyFollowing);
+        }
+
+        @Override
+        protected List<Map<String, Object>> getFallback() {
+            log.warn("GetProductsFiltered circuit breaker opened or timed out. Returning empty list.");
+            return Collections.emptyList();
+        }
+    }
+
+    private static class GetAllCategoriesCommand extends HystrixCommand<List<String>> {
+        private final ProductService productService;
+
+        protected GetAllCategoriesCommand(ProductService productService) {
+            super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey("Database"))
+                    .andCommandKey(HystrixCommandKey.Factory.asKey("GetAllCategories"))
+                    .andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
+                            .withCircuitBreakerEnabled(true)
+                            .withCircuitBreakerRequestVolumeThreshold(10)
+                            .withCircuitBreakerErrorThresholdPercentage(50)
+                            .withCircuitBreakerSleepWindowInMilliseconds(5000)
+                            .withExecutionTimeoutInMilliseconds(3000)
+                            .withFallbackEnabled(true)));
+            this.productService = productService;
+        }
+
+        @Override
+        protected List<String> run() throws Exception {
+            return productService.getAllCategories();
+        }
+
+        @Override
+        protected List<String> getFallback() {
+            log.warn("GetAllCategories circuit breaker opened or timed out. Returning empty list.");
             return Collections.emptyList();
         }
     }

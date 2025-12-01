@@ -1,7 +1,10 @@
 package com.trustworthyreviews.controller;
 
+import com.trustworthyreviews.security.SupabaseUser;
 import com.trustworthyreviews.service.HystrixProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,12 +17,24 @@ public class ProductController {
     @Autowired
     private HystrixProductService hystrixProductService;
 
-    /**
-     * Get all products
-     */
     @GetMapping
-    public List<Map<String, Object>> getAllProducts() {
-        return hystrixProductService.getAllProducts();
+    public List<Map<String, Object>> getAllProducts(
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false, defaultValue = "false") boolean onlyFollowing) {
+        
+        String userId = null;
+        if (onlyFollowing) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.getPrincipal() instanceof SupabaseUser user) {
+                userId = user.getId();
+            }
+        }
+        
+        if ((category == null || category.isEmpty() || "all".equalsIgnoreCase(category)) && !onlyFollowing) {
+            return hystrixProductService.getAllProducts();
+        }
+        
+        return hystrixProductService.getProductsFiltered(category, userId, onlyFollowing);
     }
 
     /**
@@ -36,6 +51,14 @@ public class ProductController {
     @GetMapping("/search")
     public List<Map<String, Object>> searchProducts(@RequestParam("q") String query) {
         return hystrixProductService.searchProducts(query);
+    }
+
+    /**
+     * Get all distinct categories
+     */
+    @GetMapping("/categories")
+    public List<String> getAllCategories() {
+        return hystrixProductService.getAllCategories();
     }
 
 }

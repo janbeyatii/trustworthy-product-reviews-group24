@@ -50,33 +50,59 @@
 <main class="dashboard">
     <section class="dashboard__sidebar">
         <article class="panel">
-            <h2>Profile</h2>
-            <div class="profile-section">
-                <div class="profile-tabs">
-                    <button class="profile-tab active" id="following-tab">Following</button>
-                    <button class="profile-tab" id="followers-tab">Followers</button>
-                    <button class="profile-tab" id="similar-users-tab">Similar Users</button>
-                    <button class="profile-tab" id="search-users-tab">Search</button>
-                </div>
-                
-                <div class="profile-content" id="profile-content">
-                    <div class="profile-list" id="following-list"></div>
-                    <div class="profile-list hidden" id="followers-list"></div>
-                    <div class="profile-list hidden" id="similar-users-list"></div>
-                    <div class="hidden" id="search-users-section">
-                        <div class="search-users">
-                            <input type="text" id="user-search-input" placeholder="Search by email or username..." class="search-input">
-                            <div class="profile-list" id="search-results"></div>
+            <div class="panel-header-toggle">
+                <button class="panel-toggle-btn active" id="profile-view-btn">Profile</button>
+                <button class="panel-toggle-btn" id="most-followed-view-btn">Most Followed</button>
+            </div>
+            
+            <div id="profile-view">
+                <div class="profile-section">
+                    <div class="profile-tabs">
+                        <button class="profile-tab active" id="following-tab">Following</button>
+                        <button class="profile-tab" id="followers-tab">Followers</button>
+                        <button class="profile-tab" id="similar-users-tab">Similar Users</button>
+                        <button class="profile-tab" id="search-users-tab">Search</button>
+                    </div>
+                    
+                    <div class="profile-content" id="profile-content">
+                        <div class="profile-list" id="following-list"></div>
+                        <div class="profile-list hidden" id="followers-list"></div>
+                        <div class="profile-list hidden" id="similar-users-list"></div>
+                        <div class="hidden" id="search-users-section">
+                            <div class="search-users">
+                                <input type="text" id="user-search-input" placeholder="Search by email or username..." class="search-input">
+                                <div class="profile-list" id="search-results"></div>
+                            </div>
                         </div>
                     </div>
+                </div>
+            </div>
+            
+            <div id="most-followed-view" class="hidden">
+                <div class="profile-section">
+                    <div class="profile-list" id="most-followed-list"></div>
                 </div>
             </div>
         </article>
     </section>
     <section class="dashboard__content">
-    <div id="products-container" class="products-container">
-    </div>
-</section>
+        <div class="product-filters">
+            <div class="filter-group">
+                <label for="category-filter">Category:</label>
+                <select id="category-filter" class="filter-select">
+                    <option value="all">All Categories</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-checkbox-label">
+                    <input type="checkbox" id="following-filter" class="filter-checkbox">
+                    <span>Only from users I follow</span>
+                </label>
+            </div>
+        </div>
+        <div id="products-container" class="products-container">
+        </div>
+    </section>
 </main>
 <div class="modal" id="display-name-modal">
     <div class="modal__content">
